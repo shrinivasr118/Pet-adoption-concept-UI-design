@@ -14,15 +14,38 @@ const sealMap = {
   dog: sealDog,
   cat: sealCat,
   bird: sealBird,
-  rabbit: sealRabbit,
-  other: sealGeneric
+  rabbit: sealRabbit
+};
+
+// --- BREED LISTS ---
+const BREEDS = {
+  dog: [
+    'Golden Retriever', 'Labrador Retriever', 'German Shepherd', 'French Bulldog',
+    'Bulldog', 'Poodle', 'Beagle', 'Rottweiler', 'Yorkshire Terrier', 
+    'Boxer', 'Dachshund', 'Siberian Husky', 'Great Dane', 'Doberman',
+    'Shih Tzu', 'Boston Terrier', 'Pomeranian', 'Chihuahua', 'Mixed Breed'
+  ],
+  cat: [
+    'Persian', 'Maine Coon', 'Siamese', 'Ragdoll', 'Bengal',
+    'British Shorthair', 'Scottish Fold', 'Sphynx', 'Abyssinian',
+    'Russian Blue', 'Birman', 'Oriental', 'Bombay', 'Mixed Breed'
+  ],
+  bird: [
+    'Parakeet', 'Cockatiel', 'Lovebird', 'Canary', 'Finch',
+    'Conure', 'Macaw', 'African Grey', 'Amazon Parrot',
+    'Cockatoo', 'Budgie', 'Dove'
+  ],
+  rabbit: [
+    'Holland Lop', 'Netherland Dwarf', 'Mini Rex', 'Lionhead',
+    'Flemish Giant', 'Angora', 'Dutch', 'Rex', 'New Zealand',
+    'Himalayan', 'Mixed Breed'
+  ]
 };
 
 const Home = ({ onAdoptClick, onTrash }) => {
   const [isDonating, setIsDonating] = useState(false);
 
   return (
-    // CHANGE 1: Restored your layout settings
     <div id="home" style={{ width: '100%', maxWidth: '1600px', margin: '0 auto', padding: '0 2rem', position: 'relative' }}>
       
       {/* --- HERO SECTION --- */}
@@ -72,7 +95,7 @@ const Home = ({ onAdoptClick, onTrash }) => {
             <motion.button
               whileHover={{ scale: 1.05, backgroundColor: "rgba(74, 55, 40, 0.1)", boxShadow: "0px 8px 15px rgba(74, 55, 40, 0.2)" }}
               whileTap={{ scale: 0.95 }}
-              onClick={() => setIsDonating(true)} // <--- CONNECTED DONATION FORM
+              onClick={() => setIsDonating(true)}
               style={{...buttonStyleSecondary, padding: '1.2rem 2.5rem', fontSize: '1.2rem'}}
             >
               Donate
@@ -133,24 +156,58 @@ const Home = ({ onAdoptClick, onTrash }) => {
   );
 };
 
-// --- DONATION FORM COMPONENT (Functionality Preserved) ---
+// --- DONATION FORM COMPONENT ---
 const DonationForm = ({ onClose, onTrash }) => {
   const [status, setStatus] = useState('filling'); 
   
+  // ADDED: isVaccinated and isNeutered state
   const [formData, setFormData] = useState({
     name: '', address: '', contact: '',
-    petType: 'dog', breed: ''
+    petType: 'dog', breed: '',
+    isVaccinated: false,
+    isNeutered: false
   });
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    // Destructure 'type' and 'checked' to handle checkboxes
+    const { name, value, type, checked } = e.target;
+    
+    // Determine the value based on input type
+    const val = type === 'checkbox' ? checked : value;
+
+    // If changing pet type, reset breed
+    if (name === 'petType') {
+      setFormData(prev => ({ ...prev, petType: val, breed: '' }));
+    } else {
+      setFormData(prev => ({ ...prev, [name]: val }));
+    }
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
     setStatus('stamped');
-    setTimeout(() => onClose(), 1500);
+
+    // 1. CREATE THE DATA OBJECT FOR ADMIN
+    const applicationData = {
+        id: 'DON-' + Math.floor(Math.random() * 10000),
+        type: 'donation', // <--- IMPORTANT: Triggers Blue File
+        petName: formData.breed ? `Incoming ${formData.breed}` : "Unknown Pet",
+        petBreed: formData.breed,
+        petType: formData.petType,
+        donorName: formData.name,
+        submittedAt: new Date().toLocaleString(),
+        healthStatus: {
+           isVaccinated: formData.isVaccinated,
+           isNeutered: formData.isNeutered,
+           isChecked: false // Donations always start as not checked
+        }
+    };
+
+    // 2. SEND DATA AND CLOSE
+    setTimeout(() => {
+        if(onTrash) onTrash(applicationData); // Send to App.js -> AdminPanel
+        onClose();
+    }, 1500);
   };
 
   const handleTrash = (e) => {
@@ -159,17 +216,6 @@ const DonationForm = ({ onClose, onTrash }) => {
     setTimeout(() => {
        setStatus('tossing');
        setTimeout(() => {
-           const trashItem = {
-             pet: { 
-               id: 'DON-' + Math.floor(Math.random() * 1000), 
-               type: formData.petType, 
-               name: formData.breed || "Unknown Pet", 
-               breed: "Donation Request",
-               img: "https://i.pinimg.com/736x/86/b0/98/86b0980ef543191114a946d7d4f1c90a.jpg" 
-             },
-             data: formData
-           };
-           onTrash(trashItem);
            onClose();
        }, 800);
     }, 800);
@@ -208,18 +254,65 @@ const DonationForm = ({ onClose, onTrash }) => {
           <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', flex: 1, fontFamily: "'Times New Roman', serif", fontSize: '1.2rem', color: '#333' }}>
             
             <div style={{ display: 'flex', gap: '20px', marginBottom: '1.5rem' }}>
+                {/* PET TYPE DROPDOWN */}
                 <div style={{ flex: 1 }}>
                     <label style={{ display: 'block', fontSize: '0.9rem', fontWeight: 'bold' }}>Pet Type:</label>
-                    <select name="petType" value={formData.petType} onChange={handleChange} style={{ width: '100%', border: 'none', borderBottom: '1px solid #000', background: 'transparent', fontSize: '1.1rem', padding: '5px 0' }}>
+                    <select 
+                      name="petType" 
+                      value={formData.petType} 
+                      onChange={handleChange} 
+                      style={{ width: '100%', border: 'none', borderBottom: '1px solid #000', background: 'transparent', fontSize: '1.1rem', padding: '5px 0', outline: 'none' }}
+                    >
                         <option value="dog">Dog</option>
                         <option value="cat">Cat</option>
                         <option value="bird">Bird</option>
                         <option value="rabbit">Rabbit</option>
                     </select>
                 </div>
+                
+                {/* BREED DROPDOWN */}
                 <div style={{ flex: 1 }}>
                     <label style={{ display: 'block', fontSize: '0.9rem', fontWeight: 'bold' }}>Breed:</label>
-                    <input name="breed" value={formData.breed} onChange={handleChange} required type="text" style={{ width: '100%', border: 'none', borderBottom: '1px solid #000', background: 'transparent', outline: 'none', fontSize: '1.1rem' }} />
+                    <select 
+                      name="breed" 
+                      value={formData.breed} 
+                      onChange={handleChange} 
+                      required
+                      style={{ width: '100%', border: 'none', borderBottom: '1px solid #000', background: 'transparent', fontSize: '1.1rem', padding: '5px 0', outline: 'none' }}
+                    >
+                        <option value="">Select Breed</option>
+                        {BREEDS[formData.petType].map(breed => (
+                          <option key={breed} value={breed}>{breed}</option>
+                        ))}
+                    </select>
+                </div>
+            </div>
+
+            {/* --- HEALTH CHECKBOXES --- */}
+            <div style={{ marginBottom: '1.5rem', padding: '10px', border: '1px dashed #bbb', borderRadius: '8px', backgroundColor: 'rgba(74, 55, 40, 0.05)' }}>
+                <label style={{ display: 'block', fontSize: '0.9rem', fontWeight: 'bold', marginBottom: '10px', color: '#4A3728' }}>Health Status:</label>
+                <div style={{ display: 'flex', gap: '20px' }}>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '1rem' }}>
+                        <input 
+                            type="checkbox" 
+                            name="isVaccinated" 
+                            checked={formData.isVaccinated} 
+                            onChange={handleChange}
+                            style={{ width: '18px', height: '18px', accentColor: '#4A3728', cursor: 'pointer' }}
+                        />
+                        Vaccinated
+                    </label>
+
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '1rem' }}>
+                        <input 
+                            type="checkbox" 
+                            name="isNeutered" 
+                            checked={formData.isNeutered} 
+                            onChange={handleChange}
+                            style={{ width: '18px', height: '18px', accentColor: '#4A3728', cursor: 'pointer' }}
+                        />
+                        Spayed / Neutered
+                    </label>
                 </div>
             </div>
 
@@ -261,6 +354,7 @@ const DonationForm = ({ onClose, onTrash }) => {
       {status === 'tossing' && (
         <motion.div initial={{ scale: 0.3, x: 0, y: 0 }} animate={{ x: (window.innerWidth / 2) - 50, y: (window.innerHeight / 2) - 50, rotate: 720, scale: 0.1, opacity: 0 }} transition={{ duration: 0.8, ease: "easeIn" }} style={{ width: '500px', height: '650px', backgroundColor: '#ddd', borderRadius: '50%', backgroundImage: 'repeating-linear-gradient(45deg, #bbb 0px, #bbb 2px, transparent 2px, transparent 10px)', boxShadow: '0 10px 20px rgba(0,0,0,0.3)', zIndex: 999 }} />
       )}
+
     </div>
   );
 };
