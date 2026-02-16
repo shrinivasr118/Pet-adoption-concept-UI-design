@@ -172,12 +172,28 @@ const generateProducts = () => {
             img: "https://source.unsplash.com/random/200x200/?pet" 
         };
 
+        // Realistic INR price ranges based on category
+        let priceRange = { min: 200, max: 800 }; // Default
+        
+        if (sType === 'food') {
+          priceRange = { min: 299, max: 1499 }; // Pet food packages
+        } else if (sType === 'toys') {
+          priceRange = { min: 199, max: 899 }; // Pet toys
+        } else if (sType === 'medicine') {
+          priceRange = { min: 249, max: 1299 }; // Medicines, supplements
+        } else if (sType === 'shampoo') {
+          priceRange = { min: 199, max: 699 }; // Pet shampoos
+        }
+
+        // Generate realistic price within the range
+        const price = Math.floor(Math.random() * (priceRange.max - priceRange.min + 1)) + priceRange.min;
+
         products.push({
           id: idCounter++,
           name: item.name, // <--- USING REAL NAME
           petType: pType,
           category: sType,
-          price: Math.floor(Math.random() * 50) + 5,
+          price: price, // Realistic INR price
           img: item.img    // <--- USING REAL IMAGE
         });
       }
@@ -195,6 +211,7 @@ const PetShop = ({ onBack }) => {
   const [subFilter, setSubFilter] = useState('all');
   const [cart, setCart] = useState([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const [showCheckout, setShowCheckout] = useState(false);
   
   const basketControls = useAnimation();
 
@@ -207,12 +224,23 @@ const PetShop = ({ onBack }) => {
     });
   }, [petFilter, subFilter]);
 
-  // Calculate Total
-  const totalPrice = cart.reduce((sum, item) => sum + item.price, 0);
+  // Calculate Total with quantities
+  const totalPrice = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
 
   // --- HANDLER: Add to Cart ---
   const handleAddToCart = (product) => {
-    setCart(prev => [...prev, product]);
+    setCart(prev => {
+      const existingIndex = prev.findIndex(item => item.id === product.id);
+      if (existingIndex >= 0) {
+        // Item exists, increase quantity
+        const updated = [...prev];
+        updated[existingIndex] = { ...updated[existingIndex], quantity: updated[existingIndex].quantity + 1 };
+        return updated;
+      } else {
+        // New item, add with quantity 1
+        return [...prev, { ...product, quantity: 1 }];
+      }
+    });
     basketControls.start({
       scale: [1, 1.3, 0.9, 1.1, 1],
       transition: { duration: 0.4 }
@@ -222,6 +250,19 @@ const PetShop = ({ onBack }) => {
   // --- HANDLER: Remove from Cart ---
   const removeFromCart = (indexToRemove) => {
     setCart(prev => prev.filter((_, i) => i !== indexToRemove));
+  };
+
+  // --- HANDLER: Update Quantity ---
+  const updateQuantity = (index, delta) => {
+    setCart(prev => {
+      const updated = [...prev];
+      const newQty = updated[index].quantity + delta;
+      if (newQty <= 0) {
+        return prev.filter((_, i) => i !== index);
+      }
+      updated[index] = { ...updated[index], quantity: newQty };
+      return updated;
+    });
   };
 
   return (
@@ -354,10 +395,11 @@ const PetShop = ({ onBack }) => {
                 </div>
 
                 {/* Table Header */}
-                <div style={{ display: 'grid', gridTemplateColumns: '40px 60px 1fr 80px 40px', padding: '10px', fontWeight: 'bold', borderBottom: '1px solid #ccc', backgroundColor: '#f9f9f9', fontSize: '0.9rem' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '40px 60px 1fr 100px 100px 40px', padding: '10px', fontWeight: 'bold', borderBottom: '1px solid #ccc', backgroundColor: '#f9f9f9', fontSize: '0.9rem' }}>
                     <span>No.</span>
                     <span>Img</span>
                     <span>Item Name</span>
+                    <span style={{ textAlign: 'center' }}>Qty</span>
                     <span>Price</span>
                     <span></span>
                 </div>
@@ -368,11 +410,26 @@ const PetShop = ({ onBack }) => {
                         <p style={{ textAlign: 'center', color: '#999', marginTop: '2rem' }}>Basket is empty.</p>
                     ) : (
                         cart.map((item, index) => (
-                            <div key={index} style={{ display: 'grid', gridTemplateColumns: '40px 60px 1fr 80px 40px', alignItems: 'center', padding: '10px 0', borderBottom: '1px solid #eee' }}>
+                            <div key={index} style={{ display: 'grid', gridTemplateColumns: '40px 60px 1fr 100px 100px 40px', alignItems: 'center', padding: '10px 0', borderBottom: '1px solid #eee' }}>
                                 <span style={{ color: '#888' }}>{index + 1}</span>
                                 <img src={item.img} alt="thumb" style={{ width: '40px', height: '40px', borderRadius: '5px', objectFit: 'cover' }} />
                                 <span style={{ fontWeight: 'bold', color: '#333' }}>{item.name}</span>
-                                <span style={{ color: '#E07A5F' }}>${item.price}</span>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '5px', justifyContent: 'center' }}>
+                                  <button 
+                                    onClick={() => updateQuantity(index, -1)}
+                                    style={{ width: '24px', height: '24px', border: '1px solid #ccc', background: '#fff', cursor: 'pointer', fontSize: '0.9rem', borderRadius: '3px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                                  >
+                                    -
+                                  </button>
+                                  <span style={{ minWidth: '30px', textAlign: 'center', fontWeight: 'bold', fontSize: '1rem' }}>{item.quantity}</span>
+                                  <button 
+                                    onClick={() => updateQuantity(index, 1)}
+                                    style={{ width: '24px', height: '24px', border: '1px solid #ccc', background: '#fff', cursor: 'pointer', fontSize: '0.9rem', borderRadius: '3px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                                  >
+                                    +
+                                  </button>
+                                </div>
+                                <span style={{ color: '#E07A5F', fontWeight: 'bold' }}>₹{item.price * item.quantity}</span>
                                 <button onClick={() => removeFromCart(index)} style={{ border: 'none', background: 'transparent', color: 'red', cursor: 'pointer', fontSize: '1.2rem' }}>×</button>
                             </div>
                         ))
@@ -383,14 +440,30 @@ const PetShop = ({ onBack }) => {
                 <div style={{ padding: '1.5rem', backgroundColor: '#f5f5f5', borderTop: '2px solid #eee' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '1.4rem', fontWeight: 'bold', marginBottom: '1rem', color: '#4A3728' }}>
                         <span>Total:</span>
-                        <span>${totalPrice}</span>
+                        <span>₹{totalPrice}</span>
                     </div>
-                    <button style={{ width: '100%', padding: '1rem', backgroundColor: '#27AE60', color: '#fff', border: 'none', borderRadius: '5px', fontSize: '1.2rem', fontWeight: 'bold', cursor: 'pointer' }}>
+                    <button onClick={() => setShowCheckout(true)} style={{ width: '100%', padding: '1rem', backgroundColor: '#27AE60', color: '#fff', border: 'none', borderRadius: '5px', fontSize: '1.2rem', fontWeight: 'bold', cursor: 'pointer' }}>
                         CHECKOUT
                     </button>
                 </div>
             </motion.div>
           </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* CHECKOUT MODAL */}
+      <AnimatePresence>
+        {showCheckout && (
+          <CheckoutModal 
+            cart={cart}
+            totalPrice={totalPrice}
+            onClose={() => setShowCheckout(false)}
+            onSuccess={() => {
+              setCart([]);
+              setShowCheckout(false);
+              setIsCartOpen(false);
+            }}
+          />
         )}
       </AnimatePresence>
 
@@ -458,7 +531,7 @@ const DraggableProduct = ({ product, onAddToCart }) => {
                 </div>
                 <div style={{ padding: '10px', textAlign: 'center' }}>
                     <h4 style={{ margin: '0 0 5px 0', fontSize: '0.9rem', color: '#333' }}>{product.name}</h4>
-                    <span style={{ color: '#E07A5F', fontWeight: 'bold' }}>${product.price}</span>
+                    <span style={{ color: '#E07A5F', fontWeight: 'bold' }}>₹{product.price}</span>
                 </div>
             </motion.div>
         </div>
@@ -490,5 +563,365 @@ const SubFilterButton = ({ active, children, onClick }) => (
         {children}
     </button>
 );
+
+// --- CHECKOUT MODAL COMPONENT ---
+const CheckoutModal = ({ cart, totalPrice, onClose, onSuccess }) => {
+  const [paymentStatus, setPaymentStatus] = useState('form'); // 'form', 'processing', 'success'
+  const [showOrderDetails, setShowOrderDetails] = useState(false);
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    address: '',
+    paymentMethod: 'upi'
+  });
+
+  const handleInputChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handlePayment = (e) => {
+    e.preventDefault();
+    setPaymentStatus('processing');
+    
+    // Simulate payment processing
+    setTimeout(() => {
+      setPaymentStatus('success');
+      setTimeout(() => {
+        onSuccess();
+      }, 2000);
+    }, 2000);
+  };
+
+  const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      onClick={onClose}
+      style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        width: '100vw',
+        height: '100vh',
+        backgroundColor: 'rgba(0,0,0,0.7)',
+        zIndex: 10000,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center'
+      }}
+    >
+      <motion.div
+        initial={{ scale: 0.8, y: 50 }}
+        animate={{ scale: 1, y: 0 }}
+        exit={{ scale: 0.8, y: 50 }}
+        onClick={(e) => e.stopPropagation()}
+        style={{
+          backgroundColor: '#fff',
+          borderRadius: '15px',
+          padding: '2rem',
+          maxWidth: '500px',
+          width: '90%',
+          maxHeight: '85vh',
+          overflowY: 'auto',
+          boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
+          position: 'relative'
+        }}
+      >
+        {paymentStatus === 'form' && (
+          <>
+            <button
+              onClick={onClose}
+              style={{
+                position: 'absolute',
+                top: '15px',
+                right: '15px',
+                background: 'transparent',
+                border: 'none',
+                fontSize: '1.5rem',
+                cursor: 'pointer',
+                color: '#888'
+              }}
+            >
+              ×
+            </button>
+
+            <h2 style={{ margin: '0 0 1.5rem 0', color: '#4A3728', fontFamily: "'Long Cang', cursive", fontSize: '2rem' }}>
+              Checkout
+            </h2>
+
+            {/* Order Summary - Expandable */}
+            <div style={{ marginBottom: '1.5rem', padding: '1rem', backgroundColor: '#f5f5f5', borderRadius: '8px' }}>
+              <div 
+                onClick={() => setShowOrderDetails(!showOrderDetails)}
+                style={{ 
+                  display: 'flex', 
+                  justifyContent: 'space-between', 
+                  alignItems: 'center',
+                  cursor: 'pointer',
+                  userSelect: 'none'
+                }}
+              >
+                <h3 style={{ margin: 0, fontSize: '1rem', color: '#4A3728' }}>Order Summary</h3>
+                <span style={{ fontSize: '1.2rem', color: '#4A3728' }}>
+                  {showOrderDetails ? '▲' : '▼'}
+                </span>
+              </div>
+              
+              <div style={{ fontSize: '0.85rem', color: '#666', margin: '0.5rem 0' }}>
+                {totalItems} item{totalItems > 1 ? 's' : ''} in cart
+              </div>
+              
+              <AnimatePresence>
+                {showOrderDetails && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: 'auto', opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.3 }}
+                    style={{ overflow: 'hidden' }}
+                  >
+                    <div style={{ 
+                      marginTop: '0.5rem', 
+                      paddingTop: '0.5rem', 
+                      borderTop: '1px solid #ddd',
+                      maxHeight: '200px',
+                      overflowY: 'auto'
+                    }}>
+                      {cart.map((item, index) => (
+                        <div 
+                          key={index}
+                          style={{ 
+                            display: 'flex', 
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                            padding: '0.5rem 0',
+                            fontSize: '0.85rem',
+                            borderBottom: index < cart.length - 1 ? '1px solid #eee' : 'none'
+                          }}
+                        >
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flex: 1 }}>
+                            <img 
+                              src={item.img} 
+                              alt={item.name}
+                              style={{ 
+                                width: '30px', 
+                                height: '30px', 
+                                borderRadius: '5px', 
+                                objectFit: 'cover' 
+                              }}
+                            />
+                            <span style={{ color: '#333' }}>{item.name}</span>
+                          </div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                            <span style={{ color: '#888' }}>x{item.quantity}</span>
+                            <span style={{ color: '#E07A5F', fontWeight: 'bold', minWidth: '70px', textAlign: 'right' }}>
+                              ₹{item.price * item.quantity}
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+              
+              <div style={{ fontSize: '1.2rem', fontWeight: 'bold', color: '#E07A5F', marginTop: '0.5rem' }}>
+                Total: ₹{totalPrice}
+              </div>
+            </div>
+
+            {/* Payment Form */}
+            <form onSubmit={handlePayment}>
+              <div style={{ marginBottom: '1rem' }}>
+                <label style={{ display: 'block', marginBottom: '0.3rem', fontWeight: 'bold', fontSize: '0.9rem', color: '#4A3728' }}>
+                  Full Name
+                </label>
+                <input
+                  type="text"
+                  name="name"
+                  value={formData.name}
+                  onChange={handleInputChange}
+                  required
+                  style={{
+                    width: '100%',
+                    padding: '0.7rem',
+                    border: '1px solid #ccc',
+                    borderRadius: '5px',
+                    fontSize: '1rem'
+                  }}
+                />
+              </div>
+
+              <div style={{ marginBottom: '1rem' }}>
+                <label style={{ display: 'block', marginBottom: '0.3rem', fontWeight: 'bold', fontSize: '0.9rem', color: '#4A3728' }}>
+                  Email
+                </label>
+                <input
+                  type="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleInputChange}
+                  required
+                  style={{
+                    width: '100%',
+                    padding: '0.7rem',
+                    border: '1px solid #ccc',
+                    borderRadius: '5px',
+                    fontSize: '1rem'
+                  }}
+                />
+              </div>
+
+              <div style={{ marginBottom: '1rem' }}>
+                <label style={{ display: 'block', marginBottom: '0.3rem', fontWeight: 'bold', fontSize: '0.9rem', color: '#4A3728' }}>
+                  Phone Number
+                </label>
+                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                  <div style={{ 
+                    padding: '0.7rem', 
+                    border: '1px solid #ccc', 
+                    borderRadius: '5px', 
+                    backgroundColor: '#f5f5f5',
+                    fontWeight: 'bold',
+                    color: '#4A3728'
+                  }}>
+                    +91
+                  </div>
+                  <input
+                    type="tel"
+                    name="phone"
+                    value={formData.phone}
+                    onChange={handleInputChange}
+                    required
+                    pattern="[0-9]{10}"
+                    placeholder="10-digit number"
+                    style={{
+                      flex: 1,
+                      padding: '0.7rem',
+                      border: '1px solid #ccc',
+                      borderRadius: '5px',
+                      fontSize: '1rem'
+                    }}
+                  />
+                </div>
+              </div>
+
+              <div style={{ marginBottom: '1rem' }}>
+                <label style={{ display: 'block', marginBottom: '0.3rem', fontWeight: 'bold', fontSize: '0.9rem', color: '#4A3728' }}>
+                  Delivery Address
+                </label>
+                <textarea
+                  name="address"
+                  value={formData.address}
+                  onChange={handleInputChange}
+                  required
+                  rows="3"
+                  style={{
+                    width: '100%',
+                    padding: '0.7rem',
+                    border: '1px solid #ccc',
+                    borderRadius: '5px',
+                    fontSize: '1rem',
+                    resize: 'vertical'
+                  }}
+                />
+              </div>
+
+              <div style={{ marginBottom: '1.5rem' }}>
+                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold', fontSize: '0.9rem', color: '#4A3728' }}>
+                  Payment Method
+                </label>
+                <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+                  {['upi', 'card', 'cod'].map((method) => (
+                    <label key={method} style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}>
+                      <input
+                        type="radio"
+                        name="paymentMethod"
+                        value={method}
+                        checked={formData.paymentMethod === method}
+                        onChange={handleInputChange}
+                        style={{ marginRight: '0.5rem' }}
+                      />
+                      <span style={{ textTransform: 'uppercase', fontSize: '0.9rem' }}>
+                        {method === 'upi' ? 'UPI' : method === 'card' ? 'Card' : 'Cash on Delivery'}
+                      </span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                style={{
+                  width: '100%',
+                  padding: '1rem',
+                  backgroundColor: '#27AE60',
+                  color: '#fff',
+                  border: 'none',
+                  borderRadius: '8px',
+                  fontSize: '1.1rem',
+                  fontWeight: 'bold',
+                  cursor: 'pointer'
+                }}
+              >
+                Place Order - ₹{totalPrice}
+              </button>
+            </form>
+          </>
+        )}
+
+        {paymentStatus === 'processing' && (
+          <div style={{ textAlign: 'center', padding: '3rem 1rem' }}>
+            <motion.div
+              animate={{ rotate: 360 }}
+              transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+              style={{
+                width: '60px',
+                height: '60px',
+                border: '4px solid #f3f3f3',
+                borderTop: '4px solid #27AE60',
+                borderRadius: '50%',
+                margin: '0 auto 1.5rem'
+              }}
+            />
+            <h3 style={{ color: '#4A3728', margin: '0 0 0.5rem 0' }}>Processing Payment...</h3>
+            <p style={{ color: '#888', margin: 0 }}>Please wait while we confirm your order</p>
+          </div>
+        )}
+
+        {paymentStatus === 'success' && (
+          <div style={{ textAlign: 'center', padding: '3rem 1rem' }}>
+            <motion.div
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ type: 'spring', stiffness: 200 }}
+              style={{
+                width: '80px',
+                height: '80px',
+                backgroundColor: '#27AE60',
+                borderRadius: '50%',
+                margin: '0 auto 1.5rem',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '3rem',
+                color: '#fff'
+              }}
+            >
+              ✓
+            </motion.div>
+            <h3 style={{ color: '#27AE60', margin: '0 0 0.5rem 0' }}>Payment Successful!</h3>
+            <p style={{ color: '#666', margin: '0 0 1rem 0' }}>Your order has been placed successfully</p>
+            <p style={{ fontSize: '0.9rem', color: '#888' }}>Order confirmation sent to {formData.email}</p>
+          </div>
+        )}
+      </motion.div>
+    </motion.div>
+  );
+};
 
 export default PetShop;

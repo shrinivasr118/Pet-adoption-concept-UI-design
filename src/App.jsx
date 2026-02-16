@@ -7,8 +7,8 @@ import Footer from './foot';
 import Home from './home';
 import About from './about';
 import Work from './work';
-import PetAdoption from './petadoption'; // The Card Stack
-import PetCategories from './petcat'; // <--- NEW IMPORT
+import PetAdoption from './petadoption';
+import PetCategories from './petcat';
 import Dustbin from './dustbin.jsx';
 import TrashRecovery from './trash.jsx';
 import NotFound from './404.jsx';
@@ -24,10 +24,23 @@ function App() {
   // --- Trash Logic ---
   const [trash, setTrash] = useState([]); 
   const [isReceivingTrash, setIsReceivingTrash] = useState(false);
-  const [isViewingTrash, setIsViewingTrash] = useState(false); 
+  const [isViewingTrash, setIsViewingTrash] = useState(false);
 
+  // --- Applications Tracking ---
+  const [applications, setApplications] = useState([]);
+
+  // ─── CRITICAL FIX HERE ───
   const handleAddToTrash = (item) => {
     setIsReceivingTrash(true);
+
+    // LOGIC: If this "trash" item is actually a Donation Form (type: 'donation'), 
+    // we MUST also send it to the Admin Panel (applications state).
+    if (item && (item.type === 'donation' || (item.id && item.id.startsWith('DON-')))) {
+        console.log("Donation received via Trash:", item);
+        setApplications(prev => [...prev, item]);
+    }
+
+    // Continue with the visual animation
     setTimeout(() => {
       setTrash(prev => [...prev, item]); 
       setIsReceivingTrash(false);
@@ -42,6 +55,14 @@ function App() {
   const handleSubmitFromTrash = (itemToSubmit) => {
     alert(`Application for ${itemToSubmit.pet.name} restored and submitted!`);
     handleRemoveFromTrash(itemToSubmit); 
+    // Optional: Add to applications if restored
+    // setApplications(prev => [...prev, itemToSubmit]); 
+  };
+
+  // --- Handle Standard Adoption Submission ---
+  const handleApplicationSubmit = (application) => {
+    setApplications(prev => [...prev, application]);
+    console.log('Adoption Application received:', application);
   };
 
   useEffect(() => {
@@ -52,7 +73,7 @@ function App() {
   return (
     <div style={{ position: 'relative', overflowX: 'hidden', backgroundColor: '#FAEBD7', minHeight: '100vh' }}>
       
-     {/* 1. DUSTBIN (Visible on Landing, Categories, and Adoption App) */}
+      {/* DUSTBIN */}
       {['landing', 'categories', 'app'].includes(view) && ( 
         <Dustbin 
           trashCount={trash.length} 
@@ -61,7 +82,7 @@ function App() {
         />
       )}
 
-      {/* 2. TRASH RECOVERY MODAL */}
+      {/* TRASH RECOVERY MODAL */}
       <AnimatePresence>
         {isViewingTrash && trash.length > 0 && (
           <TrashRecovery 
@@ -87,18 +108,17 @@ function App() {
             {/* VIEW 1: LANDING */}
             {view === 'landing' && (
               <motion.div key="landing" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-                {/* Note: Removed Navbar onContactClick because we moved it to Footer */}
                 <Navbar /> 
-                
-                <Home onAdoptClick={() => setView('categories')} onTrash={handleAddToTrash} />
+                <Home 
+                    onAdoptClick={() => setView('categories')} 
+                    onTrash={handleAddToTrash} // Now handles Donations too!
+                />
                 <About />
                 <Work 
                    onAdoptClick={() => setView('categories')} 
                    onShopClick={() => setView('shop')} 
                    onCareClick={() => setView('care')} 
                 />
-                
-                {/* Trigger for 404 is now in Footer */}
                 <Footer onContactClick={() => setView('404')} />
               </motion.div>
             )}
@@ -119,7 +139,8 @@ function App() {
                 <PetAdoption 
                    category={selectedCategory} 
                    onBack={() => setView('categories')} 
-                   onTrash={handleAddToTrash} 
+                   onTrash={handleAddToTrash}
+                   onApplication={handleApplicationSubmit}
                 />
               </motion.div>
             )}
@@ -127,7 +148,10 @@ function App() {
             {/* VIEW 5: ADMIN PANEL */}
             {view === 'admin' && (
                 <motion.div key="admin" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-                    <AdminPanel onLogout={() => setView('landing')} />
+                    <AdminPanel 
+                      onLogout={() => setView('landing')}
+                      receivedApplications={applications} // Passing the state here
+                    />
                 </motion.div>
             )}
   
