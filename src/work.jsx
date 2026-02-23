@@ -38,7 +38,7 @@ const workSections = [
 ];
 
 // ACCEPT BOTH PROPS
-const Work = ({ onAdoptClick, onShopClick, onCareClick }) => {
+const Work = ({ onAdoptClick, onShopClick, onCareClick, onNewsletterClick }) => {
   return (
     <div style={{ 
       backgroundColor: '#FAEBD7', 
@@ -163,7 +163,7 @@ const Work = ({ onAdoptClick, onShopClick, onCareClick }) => {
         <p style={{ maxWidth: '600px', margin: '0 auto 2rem', fontSize: '1.2rem', lineHeight: '1.6', color: '#4A3728' }}>
           Whether you adopt, donate, or volunteer, your support changes lives. 
         </p>
-        <button style={{ padding: '1rem 3rem', fontSize: '1.1rem', backgroundColor: '#4A3728', color: '#FAEBD7', border: 'none', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold' }}>
+        <button onClick={onNewsletterClick} style={{ padding: '1rem 3rem', fontSize: '1.1rem', backgroundColor: '#4A3728', color: '#FAEBD7', border: 'none', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold' }}>
           Join Our Newsletter
         </button>
       </div>

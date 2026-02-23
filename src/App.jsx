@@ -15,6 +15,10 @@ import NotFound from './404.jsx';
 import AdminPanel from './admin.jsx';
 import PetShop from './petshop.jsx';
 import PetCare from './petcare.jsx';
+import Newsletter from './newsletter.jsx';
+import InstagramPage from './instagram.jsx';
+import TwitterPage from './twitter.jsx';
+import LinkedInPage from './linkedin.jsx';
 
 function App() {
   const [showIntro, setShowIntro] = useState(true);
@@ -117,9 +121,15 @@ function App() {
                 <Work 
                    onAdoptClick={() => setView('categories')} 
                    onShopClick={() => setView('shop')} 
-                   onCareClick={() => setView('care')} 
+                   onCareClick={() => setView('care')}
+                   onNewsletterClick={() => setView('newsletter')}
                 />
-                <Footer onContactClick={() => setView('404')} />
+                <Footer 
+                  onContactClick={() => setView('404')}
+                  onInstagramClick={() => setView('instagram')}
+                  onTwitterClick={() => setView('twitter')}
+                  onLinkedInClick={() => setView('linkedin')}
+                />
               </motion.div>
             )}
 
@@ -176,6 +186,34 @@ function App() {
             {view === 'care' && (
               <motion.div key="care" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
                   <PetCare onBack={() => setView('landing')} />
+              </motion.div>
+            )}
+
+            {/* VIEW 8: NEWSLETTER */}
+            {view === 'newsletter' && (
+              <motion.div key="newsletter" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                <Newsletter onBack={() => setView('landing')} />
+              </motion.div>
+            )}
+
+            {/* VIEW 9: INSTAGRAM */}
+            {view === 'instagram' && (
+              <motion.div key="instagram" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                <InstagramPage onBack={() => setView('landing')} />
+              </motion.div>
+            )}
+
+            {/* VIEW 10: TWITTER */}
+            {view === 'twitter' && (
+              <motion.div key="twitter" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                <TwitterPage onBack={() => setView('landing')} />
+              </motion.div>
+            )}
+
+            {/* VIEW 11: LINKEDIN */}
+            {view === 'linkedin' && (
+              <motion.div key="linkedin" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                <LinkedInPage onBack={() => setView('landing')} />
               </motion.div>
             )}
 

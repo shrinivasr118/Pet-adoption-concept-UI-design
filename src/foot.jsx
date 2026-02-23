@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 
-const Footer = ({ onContactClick }) => {
+const Footer = ({ onContactClick, onInstagramClick, onTwitterClick, onLinkedInClick }) => {
   const currentYear = new Date().getFullYear();
 
   return (
@@ -81,12 +81,29 @@ const Footer = ({ onContactClick }) => {
         <div style={{ flex: '1 1 200px' }}>
           <h3 style={{ marginBottom: '1rem', textTransform: 'uppercase', letterSpacing: '1px' }}>Contact</h3>
           <p style={{ marginBottom: '0.5rem' }}>hello@pobapet.com</p>
-          <p style={{ marginBottom: '0.5rem' }}>+1 (555) 123-4567</p>
-          <div style={{ marginTop: '1rem', display: 'flex', gap: '1rem' }}>
-            {/* Simple Text Socials */}
-            <span style={{ cursor: 'pointer', opacity: 0.8 }}>Insta</span>
-            <span style={{ cursor: 'pointer', opacity: 0.8 }}>Twitter</span>
-            <span style={{ cursor: 'pointer', opacity: 0.8 }}>LinkedIn</span>
+          <p style={{ marginBottom: '0.5rem' }}>+91 98765 43210</p>
+          <div style={{ marginTop: '1rem', display: 'flex', gap: '0.8rem', flexWrap: 'wrap' }}>
+            <motion.span
+              onClick={onInstagramClick}
+              whileHover={{ scale: 1.1, color: '#E1306C' }}
+              style={{ cursor: 'pointer', opacity: 0.85, fontWeight: '600', padding: '4px 12px', border: '1px solid rgba(74,55,40,0.3)', borderRadius: '20px', fontSize: '0.9rem' }}
+            >
+              Instagram
+            </motion.span>
+            <motion.span
+              onClick={onTwitterClick}
+              whileHover={{ scale: 1.1, color: '#1d9bf0' }}
+              style={{ cursor: 'pointer', opacity: 0.85, fontWeight: '600', padding: '4px 12px', border: '1px solid rgba(74,55,40,0.3)', borderRadius: '20px', fontSize: '0.9rem' }}
+            >
+              Twitter
+            </motion.span>
+            <motion.span
+              onClick={onLinkedInClick}
+              whileHover={{ scale: 1.1, color: '#0a66c2' }}
+              style={{ cursor: 'pointer', opacity: 0.85, fontWeight: '600', padding: '4px 12px', border: '1px solid rgba(74,55,40,0.3)', borderRadius: '20px', fontSize: '0.9rem' }}
+            >
+              LinkedIn
+            </motion.span>
           </div>
         </div>
       </div>
