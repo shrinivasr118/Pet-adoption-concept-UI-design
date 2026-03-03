@@ -1,413 +1,520 @@
-import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useState, useRef } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 
-const PROFILE = {
-  username: 'pobapet_official',
-  name: 'POBA PETs',
-  bio: '🐾 Mumbai\'s Favourite Pet Adoption Centre\n📍 Mumbai, Maharashtra\n🌐 pobapet.com\n❤️ 500+ happy adoptions',
-  followers: '2.4K',
-  following: 210,
-  posts: 6,
-  avatar: 'https://images.unsplash.com/photo-1543466835-00a7907e9de1?w=150&q=80',
+const C = {
+  bg: "#fafafa", white: "#ffffff", border: "#dbdbdb",
+  text: "#262626", muted: "#8e8e8e", blue: "#0095f6", red: "#ed4956",
+  grad: "linear-gradient(45deg,#f09433 0%,#e6683c 25%,#dc2743 50%,#cc2366 75%,#bc1888 100%)",
 };
 
-const HIGHLIGHTS = [
-  { id: 1, name: 'Adopted ❤️', cover: 'https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=150&q=80', slides: ['https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=600&q=80','https://images.unsplash.com/photo-1543466835-00a7907e9de1?w=600&q=80'] },
-  { id: 2, name: 'New Pals', cover: 'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=150&q=80', slides: ['https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=600&q=80','https://images.unsplash.com/photo-1574158622682-e40e69881006?w=600&q=80'] },
-  { id: 3, name: 'Care Tips', cover: 'https://images.unsplash.com/photo-1452570053594-1b985d6ea890?w=150&q=80', slides: ['https://images.unsplash.com/photo-1452570053594-1b985d6ea890?w=600&q=80'] },
-  { id: 4, name: 'Events', cover: 'https://images.unsplash.com/photo-1585110396000-c9ffd4e4b308?w=150&q=80', slides: ['https://images.unsplash.com/photo-1585110396000-c9ffd4e4b308?w=600&q=80'] },
-  { id: 5, name: 'Shop', cover: 'https://images.unsplash.com/photo-1560114928-40f1f1eb26a0?w=150&q=80', slides: ['https://images.unsplash.com/photo-1560114928-40f1f1eb26a0?w=600&q=80'] },
-];
+const PROFILE = {
+  username: "pobapet_official", name: "POBA PETs",
+  bio: "🐾 Mumbai's Pet Adoption Centre\n📍 Helping pets find homes since 2019\n❤️ 500+ successful adoptions\n🌐 DM to adopt",
+  website: "pobapet.com",
+};
 
 const POSTS = [
-  { id: 1, img: 'https://images.unsplash.com/photo-1543466835-00a7907e9de1?w=600&q=80', likes: 842, caption: 'Bella found her forever home today 🐾 #adoption #dog #pobapet', time: '2 hours ago', comments: [{ user: 'aarav_k', text: 'This made my day!' }, { user: 'meow_india', text: 'So beautiful 😭' }] },
-  { id: 2, img: 'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=600&q=80', likes: 1203, caption: 'Luna says good morning ☀️ Still available for adoption. DM us! #cat #siamese', time: '1 day ago', comments: [{ user: 'pooja.patel', text: 'She looks royal 👑' }, { user: 'delhi_petlover', text: 'I want her!!!' }] },
-  { id: 3, img: 'https://images.unsplash.com/photo-1452570053594-1b985d6ea890?w=600&q=80', likes: 567, caption: 'Rio has been with us for 3 months. He knows 12 words! 🦜 #macaw #bird', time: '2 days ago', comments: [{ user: 'shrini_118', text: 'What are the 12 words?? 😂' }] },
-  { id: 4, img: 'https://images.unsplash.com/photo-1585110396000-c9ffd4e4b308?w=600&q=80', likes: 934, caption: 'Snowball is the fluffiest resident at POBA 🐰 #rabbit #bunny', time: '3 days ago', comments: [{ user: 'mumbai_bunny', text: 'She is the cutest thing 🥺' }] },
-  { id: 5, img: 'https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=600&q=80', likes: 2100, caption: 'Bruno is officially ADOPTED! 🎉 We are crying happy tears 💛 #adopted #rottweiler', time: '5 days ago', comments: [{ user: 'arjun.official', text: 'YESSS!! So happy for him!' }] },
-  { id: 6, img: 'https://images.unsplash.com/photo-1574158622682-e40e69881006?w=600&q=80', likes: 776, caption: 'Meet Nala — our newest British Shorthair 😂 #cat #britishshorthair', time: '1 week ago', comments: [{ user: 'cats.of.india', text: 'She already owns the place 😍' }] },
+  { id: 1, img: "https://images.unsplash.com/photo-1543466835-00a7907e9de1?w=800&q=80", likes: 842, caption: "Bella found her forever home today 🐾 Swipe to see her reaction! #adoption #dog #pobapet", time: "2 hours ago", comments: [{ user: "animalover", text: "So adorable! 😍" }, { user: "dogmom", text: "This made my day 🥺" }] },
+  { id: 2, img: "https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=800&q=80", likes: 1203, caption: "Luna the Siamese is still looking for a home 🥺 DM to adopt! #cat #adoptdontshop", time: "1 day ago", comments: [{ user: "catperson", text: "I want her 😭" }, { user: "mumbairescue", text: "Sharing this!" }] },
+  { id: 3, img: "https://images.unsplash.com/photo-1452570053594-1b985d6ea890?w=800&q=80", likes: 567, caption: "Meet Rio! This Macaw knows 12 words and counting 🦜 #parrot #birds", time: "2 days ago", comments: [{ user: "birdwatcher", text: "What a beauty!" }] },
+  { id: 4, img: "https://images.unsplash.com/photo-1585110396000-c9ffd4e4b308?w=800&q=80", likes: 934, caption: "Snowball is the fluffiest resident at POBA 🐰 She loves cuddles and carrots! #rabbit #bunny", time: "3 days ago", comments: [{ user: "bunnyclub", text: "Need her in my life 🐰" }] },
+  { id: 5, img: "https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=800&q=80", likes: 2100, caption: "ADOPTED! 🎉 Bruno found his forever family after 4 months with us. 💛 #success #adopted", time: "5 days ago", comments: [{ user: "adoptdontshop", text: "This is everything 💛" }, { user: "mumbaidog", text: "Bruno!!!! 🎉" }] },
+  { id: 6, img: "https://images.unsplash.com/photo-1574158622682-e40e69881006?w=800&q=80", likes: 776, caption: "New arrival: Nala the British Shorthair 😻 She already thinks she owns the place! #cat", time: "1 week ago", comments: [{ user: "catmom99", text: "Queen energy 👑" }] },
 ];
 
-const STORIES = [
-  { name: 'pobapet_official', img: 'https://images.unsplash.com/photo-1543466835-00a7907e9de1?w=150&q=80', seen: false },
-  { name: 'adopted_bella', img: 'https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=150&q=80', seen: false },
-  { name: 'luna.cat', img: 'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=150&q=80', seen: true },
-  { name: 'rio_parrot', img: 'https://images.unsplash.com/photo-1452570053594-1b985d6ea890?w=150&q=80', seen: false },
-  { name: 'snowball_bunny', img: 'https://images.unsplash.com/photo-1585110396000-c9ffd4e4b308?w=150&q=80', seen: true },
+const HIGHLIGHTS = [
+  { id: 1, name: "Adopted ❤️", cover: "https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=200&q=80", slides: ["https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=600&q=80", "https://images.unsplash.com/photo-1543466835-00a7907e9de1?w=600&q=80"] },
+  { id: 2, name: "Dogs", cover: "https://images.unsplash.com/photo-1543466835-00a7907e9de1?w=200&q=80", slides: ["https://images.unsplash.com/photo-1543466835-00a7907e9de1?w=600&q=80", "https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=600&q=80"] },
+  { id: 3, name: "Cats", cover: "https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=200&q=80", slides: ["https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=600&q=80", "https://images.unsplash.com/photo-1574158622682-e40e69881006?w=600&q=80"] },
+  { id: 4, name: "Birds", cover: "https://images.unsplash.com/photo-1452570053594-1b985d6ea890?w=200&q=80", slides: ["https://images.unsplash.com/photo-1452570053594-1b985d6ea890?w=600&q=80"] },
+  { id: 5, name: "Care Tips", cover: "https://images.unsplash.com/photo-1560114928-40f1f1eb26a0?w=200&q=80", slides: ["https://images.unsplash.com/photo-1560114928-40f1f1eb26a0?w=600&q=80"] },
 ];
 
-const EXPLORE_IMGS = [
-  'https://images.unsplash.com/photo-1552728089-57bdde30beb3?w=300&q=80',
-  'https://images.unsplash.com/photo-1560114928-40f1f1eb26a0?w=300&q=80',
-  'https://images.unsplash.com/photo-1574158622682-e40e69881006?w=300&q=80',
-  'https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?w=300&q=80',
-  'https://images.unsplash.com/photo-1552728089-57bdde30beb3?w=300&q=80',
-  'https://images.unsplash.com/photo-1537151608828-ea2b11777ee8?w=300&q=80',
-  'https://images.unsplash.com/photo-1518715308788-3005759c61d4?w=300&q=80',
-  'https://images.unsplash.com/photo-1559214369-a6b1d7919865?w=300&q=80',
-  'https://images.unsplash.com/photo-1543466835-00a7907e9de1?w=300&q=80',
-];
+/* ─── ICONS ─────────────────────────────────────────────── */
+const Icon = {
+  Home: ({ f }) => <svg width="24" height="24" viewBox="0 0 24 24" fill={f?"#262626":"none"} stroke="#262626" strokeWidth="1.8"><path d="M3 9.5L12 3l9 6.5V21a1 1 0 01-1 1H5a1 1 0 01-1-1V9.5z" strokeLinecap="round" strokeLinejoin="round"/><path d="M9 22V12h6v10" strokeLinecap="round" strokeLinejoin="round"/></svg>,
+  Search: () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#262626" strokeWidth="1.8"><circle cx="10.5" cy="10.5" r="7.5"/><line x1="16.5" y1="16.5" x2="22" y2="22" strokeLinecap="round"/></svg>,
+  Plus: () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#262626" strokeWidth="1.8"><rect x="2" y="2" width="20" height="20" rx="5"/><line x1="12" y1="7" x2="12" y2="17" strokeLinecap="round"/><line x1="7" y1="12" x2="17" y2="12" strokeLinecap="round"/></svg>,
+  Reels: () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#262626" strokeWidth="1.8"><rect x="2" y="2" width="20" height="20" rx="5"/><line x1="2" y1="9" x2="22" y2="9"/><line x1="9" y1="2" x2="9" y2="9"/><line x1="15" y1="2" x2="15" y2="9"/><path d="M10 13.5l5 3-5 3v-6z" fill="#262626" stroke="none"/></svg>,
+  Profile: ({ f }) => <svg width="24" height="24" viewBox="0 0 24 24" fill={f?"#262626":"none"} stroke="#262626" strokeWidth="1.8"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" strokeLinecap="round"/></svg>,
+  Heart: ({ f }) => <svg width="24" height="24" viewBox="0 0 24 24" fill={f?"#ed4956":"none"} stroke={f?"#ed4956":"#262626"} strokeWidth="1.8"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>,
+  Comment: () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#262626" strokeWidth="1.8"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>,
+  Share: () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#262626" strokeWidth="1.8"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>,
+  Bookmark: ({ f }) => <svg width="24" height="24" viewBox="0 0 24 24" fill={f?"#262626":"none"} stroke="#262626" strokeWidth="1.8"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg>,
+  More: () => <svg width="20" height="20" viewBox="0 0 24 24" fill="#262626"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg>,
+  Close: ({ dark }) => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={dark?"#262626":"white"} strokeWidth="2.5"><line x1="18" y1="6" x2="6" y2="18" strokeLinecap="round"/><line x1="6" y1="6" x2="18" y2="18" strokeLinecap="round"/></svg>,
+  ChevL: () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5"><polyline points="15 18 9 12 15 6" strokeLinecap="round" strokeLinejoin="round"/></svg>,
+  ChevR: () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5"><polyline points="9 18 15 12 9 6" strokeLinecap="round" strokeLinejoin="round"/></svg>,
+  Back: () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#262626" strokeWidth="2"><polyline points="15 18 9 12 15 6" strokeLinecap="round" strokeLinejoin="round"/></svg>,
+  BigHeart: () => <svg width="80" height="80" viewBox="0 0 24 24" fill="white" stroke="white" strokeWidth="0.5" style={{filter:"drop-shadow(0 4px 12px rgba(0,0,0,0.5))"}}><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>,
+  GridTab: ({ a }) => <svg width="11" height="11" viewBox="0 0 11 11" fill={a?"#262626":"#8e8e8e"}><rect x="0" y="0" width="4.5" height="4.5" rx="0.5"/><rect x="6.5" y="0" width="4.5" height="4.5" rx="0.5"/><rect x="0" y="6.5" width="4.5" height="4.5" rx="0.5"/><rect x="6.5" y="6.5" width="4.5" height="4.5" rx="0.5"/></svg>,
+  ReelsTab: ({ a }) => <svg width="11" height="11" viewBox="0 0 11 11" fill={a?"#262626":"#8e8e8e"}><rect x="0" y="0" width="11" height="11" rx="2"/><path d="M4 3.5l4 2-4 2v-4z" fill="white"/></svg>,
+  TagTab: ({ a }) => <svg width="11" height="11" viewBox="0 0 12 12" fill={a?"#262626":"#8e8e8e"}><path d="M11 1H8L1 8l3 3 7-7V1zM9.5 3.5a1 1 0 110-2 1 1 0 010 2z"/></svg>,
+};
 
-const NOTIFS = [
-  { user: 'aarav_k', action: 'liked your photo', img: 'https://images.unsplash.com/photo-1543466835-00a7907e9de1?w=60&q=80', time: '2m' },
-  { user: 'pooja.patel', action: 'commented: "She looks royal 👑"', img: 'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=60&q=80', time: '15m' },
-  { user: 'delhi_petlover', action: 'started following you', img: null, time: '1h' },
-  { user: 'neha__', action: 'liked your photo', img: 'https://images.unsplash.com/photo-1452570053594-1b985d6ea890?w=60&q=80', time: '2h' },
-  { user: 'mumbai_bunny', action: 'commented: "She is the cutest thing 🥺"', img: 'https://images.unsplash.com/photo-1585110396000-c9ffd4e4b308?w=60&q=80', time: '3h' },
-  { user: 'arjun.official', action: 'started following you', img: null, time: '5h' },
-  { user: 'cats.of.india', action: 'liked your photo', img: 'https://images.unsplash.com/photo-1574158622682-e40e69881006?w=60&q=80', time: '1d' },
-];
-
-const DMS = [
-  { user: 'aarav_k', msg: 'Hey! Is Bella still available?', time: '2m', avatar: null, unread: true },
-  { user: 'pooja.patel', msg: 'I want to adopt Luna 🥺', time: '1h', avatar: null, unread: true },
-  { user: 'delhi_petlover', msg: 'What are your adoption fees?', time: '3h', avatar: null, unread: false },
-  { user: 'mumbai_bunny', msg: 'Can I visit this Saturday?', time: '1d', avatar: null, unread: false },
-];
-
-const InstagramPage = ({ onBack }) => {
-  const [page, setPage] = useState('profile'); // profile, feed, explore, reels, notifications, dms
-  const [likedPosts, setLikedPosts] = useState([]);
-  const [savedPosts, setSavedPosts] = useState([]);
-  const [openPost, setOpenPost] = useState(null);
-  const [commentText, setCommentText] = useState('');
-  const [postComments, setPostComments] = useState({});
-  const [storyData, setStoryData] = useState(null); // { slides, index, name }
-  const [highlightData, setHighlightData] = useState(null);
-  const [profileTab, setProfileTab] = useState('posts'); // posts, reels, tagged
-  const [openDM, setOpenDM] = useState(null);
-  const [dmText, setDmText] = useState('');
-  const [dmMessages, setDmMessages] = useState({});
-  const [following, setFollowing] = useState(false);
-
-  const toggleLike = (id) => setLikedPosts(p => p.includes(id) ? p.filter(x => x !== id) : [...p, id]);
-  const toggleSave = (id) => setSavedPosts(p => p.includes(id) ? p.filter(x => x !== id) : [...p, id]);
-
-  const addComment = (postId) => {
-    if (!commentText.trim()) return;
-    setPostComments(prev => ({ ...prev, [postId]: [...(prev[postId] || []), { user: 'you', text: commentText }] }));
-    setCommentText('');
-  };
-
-  const sendDM = () => {
-    if (!dmText.trim() || !openDM) return;
-    setDmMessages(prev => ({ ...prev, [openDM.user]: [...(prev[openDM.user] || []), { from: 'you', text: dmText }] }));
-    setDmText('');
-  };
-
-  const allComments = (post) => [...post.comments, ...(postComments[post.id] || [])];
-
-  // ── STORY VIEWER ──
-  const StoryViewer = ({ data, onClose }) => {
-    const [idx, setIdx] = useState(data.startIndex || 0);
-    const slides = data.slides;
-    return (
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose} style={{ position: 'fixed', inset: 0, backgroundColor: '#000', zIndex: 500, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <div onClick={e => e.stopPropagation()} style={{ position: 'relative', width: '100%', maxWidth: '400px', aspectRatio: '9/16', borderRadius: '12px', overflow: 'hidden' }}>
-          <img src={slides[idx]} alt="story" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-          {/* Progress bars */}
-          <div style={{ position: 'absolute', top: 0, left: 0, right: 0, display: 'flex', gap: '3px', padding: '10px 12px' }}>
-            {slides.map((_, i) => <div key={i} style={{ flex: 1, height: '2px', backgroundColor: i <= idx ? '#fff' : 'rgba(255,255,255,0.4)', borderRadius: '2px' }} />)}
-          </div>
-          {/* Header */}
-          <div style={{ position: 'absolute', top: '24px', left: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'linear-gradient(45deg,#f09433,#bc1888)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: '12px', fontWeight: 'bold' }}>P</div>
-            <span style={{ color: '#fff', fontSize: '14px', fontWeight: '600' }}>{data.name}</span>
-            <span style={{ color: 'rgba(255,255,255,0.7)', fontSize: '12px' }}>• {idx + 1}/{slides.length}</span>
-          </div>
-          <button onClick={onClose} style={{ position: 'absolute', top: '24px', right: '16px', background: 'none', border: 'none', color: '#fff', fontSize: '1.5rem', cursor: 'pointer' }}>×</button>
-          {/* Nav */}
-          <div style={{ position: 'absolute', inset: 0, display: 'flex' }}>
-            <div style={{ flex: 1, cursor: 'pointer' }} onClick={() => idx > 0 ? setIdx(idx - 1) : onClose()} />
-            <div style={{ flex: 1, cursor: 'pointer' }} onClick={() => idx < slides.length - 1 ? setIdx(idx + 1) : onClose()} />
-          </div>
-          <div style={{ position: 'absolute', bottom: '30px', left: 0, right: 0, textAlign: 'center', color: '#fff', fontWeight: '600', fontSize: '18px' }}>{data.name}</div>
+/* ─── AVATAR RING ────────────────────────────────────────── */
+function Ring({ size = 66, pad = 2, gap = 2, seen, label, onClick, children }) {
+  const total = size + pad * 2 + gap * 2;
+  return (
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", cursor: "pointer", flexShrink: 0 }} onClick={onClick}>
+      <div style={{ width: total, height: total, borderRadius: "50%", background: seen ? "#dbdbdb" : C.grad, padding: pad, display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <div style={{ width: size, height: size, borderRadius: "50%", border: `${gap}px solid white`, overflow: "hidden", background: "#e1e8ed", display: "flex", alignItems: "center", justifyContent: "center" }}>
+          {children}
         </div>
-      </motion.div>
-    );
+      </div>
+      {label && <div style={{ fontSize: 11, marginTop: 5, maxWidth: total + 4, textAlign: "center", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", color: C.text }}>{label}</div>}
+    </div>
+  );
+}
+
+/* ─── STORY VIEWER ───────────────────────────────────────── */
+function StoryViewer({ hl, onClose }) {
+  const [idx, setIdx] = useState(0);
+  const [prog, setProg] = useState(0);
+  const ref = useRef(null);
+  const DURATION = 5000;
+
+  useState(() => {
+    let start = Date.now();
+    const tick = () => {
+      const elapsed = Date.now() - start;
+      const p = (elapsed / DURATION) * 100;
+      if (p >= 100) {
+        if (idx < hl.slides.length - 1) { setIdx(i => i + 1); start = Date.now(); setProg(0); }
+        else onClose();
+      } else {
+        setProg(p);
+        ref.current = requestAnimationFrame(tick);
+      }
+    };
+    ref.current = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(ref.current);
+  });
+
+  // Use useEffect for the timer
+  const [, forceRender] = useState(0);
+  useState(() => { forceRender(n => n + 1); });
+
+  return (
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+      style={{ position: "fixed", inset: 0, background: "#000", zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <StoryContent hl={hl} onClose={onClose} />
+    </motion.div>
+  );
+}
+
+function StoryContent({ hl, onClose }) {
+  const [idx, setIdx] = useState(0);
+  const [prog, setProg] = useState(0);
+  const rafRef = useRef(null);
+  const startRef = useRef(Date.now());
+
+  const runTimer = () => {
+    startRef.current = Date.now();
+    setProg(0);
+    const tick = () => {
+      const p = Math.min(((Date.now() - startRef.current) / 5000) * 100, 100);
+      setProg(p);
+      if (p < 100) rafRef.current = requestAnimationFrame(tick);
+      else {
+        if (idx < hl.slides.length - 1) setIdx(i => i + 1);
+        else onClose();
+      }
+    };
+    cancelAnimationFrame(rafRef.current);
+    rafRef.current = requestAnimationFrame(tick);
   };
 
-  // ── POST MODAL ──
-  const PostModal = ({ post, onClose }) => (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose} style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.85)', zIndex: 300, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
-      <motion.div initial={{ scale: 0.9 }} animate={{ scale: 1 }} onClick={e => e.stopPropagation()} style={{ backgroundColor: '#fff', borderRadius: '4px', display: 'flex', maxWidth: '900px', width: '100%', maxHeight: '90vh', overflow: 'hidden' }}>
-        <img src={post.img} alt="post" style={{ width: '55%', objectFit: 'cover', flexShrink: 0 }} />
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-          <div style={{ padding: '16px', borderBottom: '1px solid #efefef', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'linear-gradient(45deg,#f09433,#bc1888)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: '12px', fontWeight: 'bold' }}>P</div>
-              <span style={{ fontWeight: '600', fontSize: '14px' }}>pobapet_official</span>
+  // Start timer on mount and idx change
+  const [, bump] = useState(0);
+  if (typeof window !== "undefined") {
+    // We'll use a simpler approach with useEffect-like behavior
+  }
+
+  const isMobile = window.innerWidth <= 420;
+
+  return (
+    <div style={{ width: Math.min(400, window.innerWidth), height: "100%", maxHeight: isMobile ? "100%" : 720, position: "relative", overflow: "hidden", borderRadius: isMobile ? 0 : 12 }}>
+      {/* Progress bars */}
+      <div style={{ position: "absolute", top: 12, left: 12, right: 12, zIndex: 10, display: "flex", gap: 4 }}>
+        {hl.slides.map((_, i) => (
+          <div key={i} style={{ flex: 1, height: 2, borderRadius: 2, background: "rgba(255,255,255,0.35)", overflow: "hidden" }}>
+            <ProgressBar running={i === idx} done={i < idx} onDone={() => { if (i === hl.slides.length - 1) onClose(); else setIdx(i + 1); }} />
+          </div>
+        ))}
+      </div>
+
+      {/* Header */}
+      <div style={{ position: "absolute", top: 24, left: 12, right: 12, zIndex: 10, display: "flex", alignItems: "center", gap: 10 }}>
+        <Ring size={34} pad={2} gap={1} seen><img src={hl.cover} style={{ width: "100%", height: "100%", objectFit: "cover" }} /></Ring>
+        <div>
+          <div style={{ color: "white", fontSize: 13, fontWeight: 600 }}>{PROFILE.username}</div>
+          <div style={{ color: "rgba(255,255,255,0.7)", fontSize: 11 }}>{hl.name}</div>
+        </div>
+        <button onClick={onClose} style={{ marginLeft: "auto", background: "none", border: "none", cursor: "pointer" }}><Icon.Close /></button>
+      </div>
+
+      {/* Slide image */}
+      <AnimatePresence mode="wait">
+        <motion.img key={idx} src={hl.slides[idx]} initial={{ opacity: 0, scale: 1.02 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.25 }}
+          style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+      </AnimatePresence>
+
+      {/* Tap zones */}
+      <div style={{ position: "absolute", inset: 0, display: "flex", zIndex: 9 }}>
+        <div style={{ flex: 1 }} onClick={() => idx > 0 && setIdx(i => i - 1)} />
+        <div style={{ flex: 1 }} onClick={() => { if (idx < hl.slides.length - 1) setIdx(i => i + 1); else onClose(); }} />
+      </div>
+
+      {/* Nav arrows */}
+      {idx > 0 && <button onClick={() => setIdx(i => i - 1)} style={{ position: "absolute", left: 8, top: "50%", transform: "translateY(-50%)", background: "rgba(0,0,0,0.3)", border: "none", borderRadius: "50%", width: 36, height: 36, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", zIndex: 11 }}><Icon.ChevL /></button>}
+      {idx < hl.slides.length - 1 && <button onClick={() => setIdx(i => i + 1)} style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", background: "rgba(0,0,0,0.3)", border: "none", borderRadius: "50%", width: 36, height: 36, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", zIndex: 11 }}><Icon.ChevR /></button>}
+
+      {/* Reply bar */}
+      <div style={{ position: "absolute", bottom: 20, left: 12, right: 12, zIndex: 10, display: "flex", gap: 10, alignItems: "center" }}>
+        <div style={{ flex: 1, border: "1.5px solid rgba(255,255,255,0.6)", borderRadius: 24, padding: "9px 16px", color: "rgba(255,255,255,0.8)", fontSize: 14 }}>Reply to {PROFILE.username}…</div>
+        <button style={{ background: "none", border: "none", cursor: "pointer" }}><Icon.Share /></button>
+      </div>
+    </div>
+  );
+}
+
+// Simple animated progress bar using RAF
+function ProgressBar({ running, done, onDone }) {
+  const [width, setWidth] = useState(done ? 100 : 0);
+  const rafRef = useRef(null);
+  const startRef = useRef(null);
+
+  if (done && width !== 100) setWidth(100);
+  if (!running && !done && width !== 0) setWidth(0);
+
+  if (running && startRef.current === null) {
+    startRef.current = Date.now();
+    const tick = () => {
+      const p = Math.min(((Date.now() - startRef.current) / 5000) * 100, 100);
+      setWidth(p);
+      if (p < 100) rafRef.current = requestAnimationFrame(tick);
+      else { startRef.current = null; onDone(); }
+    };
+    rafRef.current = requestAnimationFrame(tick);
+  }
+
+  if (!running) {
+    if (rafRef.current) { cancelAnimationFrame(rafRef.current); rafRef.current = null; startRef.current = null; }
+  }
+
+  return <div style={{ height: "100%", background: "white", width: `${width}%` }} />;
+}
+
+/* ─── POST MODAL ─────────────────────────────────────────── */
+function PostModal({ post, liked, saved, onLike, onSave, onClose }) {
+  const [comments, setComments] = useState(post.comments);
+  const [input, setInput] = useState("");
+  const [heartAnim, setHeartAnim] = useState(false);
+  const lastTap = useRef(0);
+
+  const doubleTap = () => {
+    const now = Date.now();
+    if (now - lastTap.current < 300) { if (!liked) onLike(post.id); setHeartAnim(true); setTimeout(() => setHeartAnim(false), 900); }
+    lastTap.current = now;
+  };
+
+  const submit = () => {
+    if (!input.trim()) return;
+    setComments(c => [...c, { user: "you", text: input }]);
+    setInput("");
+  };
+
+  return (
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose}
+      style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)", zIndex: 900, display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}>
+      <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} transition={{ type: "spring", stiffness: 280, damping: 28 }}
+        onClick={e => e.stopPropagation()}
+        style={{ background: C.white, borderRadius: 4, overflow: "hidden", display: "flex", width: "100%", maxWidth: 900, maxHeight: "90vh", boxShadow: "0 12px 48px rgba(0,0,0,0.5)" }}>
+
+        {/* LEFT: Image */}
+        <div style={{ flex: "0 0 auto", width: "55%", background: "#000", position: "relative", display: "flex", alignItems: "center", justifyContent: "center" }} onClick={doubleTap}>
+          <img src={post.img} style={{ width: "100%", maxHeight: "90vh", objectFit: "cover", display: "block" }} />
+          <AnimatePresence>
+            {heartAnim && (
+              <motion.div initial={{ opacity: 0, scale: 0.4 }} animate={{ opacity: 1, scale: 1.1 }} exit={{ opacity: 0, scale: 1.4 }} transition={{ duration: 0.6 }}
+                style={{ position: "absolute", pointerEvents: "none" }}><Icon.BigHeart /></motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+
+        {/* RIGHT: Panel */}
+        <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0 }}>
+          {/* Header */}
+          <div style={{ display: "flex", alignItems: "center", padding: "14px 16px", borderBottom: `1px solid ${C.border}`, gap: 10, flexShrink: 0 }}>
+            <Ring size={32} pad={1.5} gap={1.5}><div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, fontWeight: 700, color: "#4A3728" }}>P</div></Ring>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontWeight: 600, fontSize: 14 }}>{PROFILE.username}</div>
+              <div style={{ fontSize: 11, color: C.muted }}>Mumbai, India</div>
             </div>
-            <button onClick={onClose} style={{ background: 'none', border: 'none', fontSize: '1.5rem', cursor: 'pointer' }}>×</button>
+            <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", padding: 4 }}><Icon.Close dark /></button>
           </div>
-          <div style={{ flex: 1, overflowY: 'auto', padding: '16px' }}>
-            <div style={{ marginBottom: '12px', fontSize: '14px' }}><span style={{ fontWeight: '600' }}>pobapet_official</span> {post.caption}</div>
-            {allComments(post).map((c, i) => <div key={i} style={{ marginBottom: '8px', fontSize: '14px' }}><span style={{ fontWeight: '600' }}>{c.user}</span> {c.text}</div>)}
-          </div>
-          <div style={{ padding: '8px 16px', borderTop: '1px solid #efefef' }}>
-            <div style={{ display: 'flex', gap: '12px', marginBottom: '8px' }}>
-              <motion.button whileTap={{ scale: 1.3 }} onClick={() => toggleLike(post.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '22px', padding: 0 }}>{likedPosts.includes(post.id) ? '❤️' : '🤍'}</motion.button>
-              <button style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '22px', padding: 0 }}>💬</button>
-              <motion.button whileTap={{ scale: 1.3 }} onClick={() => toggleSave(post.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '22px', padding: 0, marginLeft: 'auto' }}>{savedPosts.includes(post.id) ? '🔖' : '🏷️'}</motion.button>
+
+          {/* Comments scroll */}
+          <div style={{ flex: 1, overflowY: "auto", padding: 16 }}>
+            <div style={{ display: "flex", gap: 12, marginBottom: 16 }}>
+              <Ring size={32} pad={1.5} gap={1.5}><div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 700, color: "#4A3728" }}>P</div></Ring>
+              <div style={{ flex: 1 }}>
+                <span style={{ fontWeight: 600, fontSize: 14 }}>{PROFILE.username} </span>
+                <span style={{ fontSize: 14 }}>{post.caption}</span>
+                <div style={{ fontSize: 11, color: C.muted, marginTop: 4 }}>{post.time}</div>
+              </div>
             </div>
-            <div style={{ fontWeight: '600', fontSize: '14px', marginBottom: '8px' }}>{(post.likes + (likedPosts.includes(post.id) ? 1 : 0)).toLocaleString()} likes</div>
+            {comments.map((c, i) => (
+              <div key={i} style={{ display: "flex", gap: 12, marginBottom: 14, alignItems: "flex-start" }}>
+                <div style={{ width: 32, height: 32, borderRadius: "50%", background: `hsl(${i * 67 + 30},55%,65%)`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 700, color: "white", flexShrink: 0 }}>{c.user[0].toUpperCase()}</div>
+                <div style={{ flex: 1 }}>
+                  <span style={{ fontWeight: 600, fontSize: 14 }}>{c.user} </span>
+                  <span style={{ fontSize: 14 }}>{c.text}</span>
+                  <div style={{ display: "flex", gap: 14, marginTop: 4 }}>
+                    <span style={{ fontSize: 11, color: C.muted }}>1h</span>
+                    <span style={{ fontSize: 11, color: C.muted, cursor: "pointer" }}>Reply</span>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
-          <div style={{ padding: '12px 16px', borderTop: '1px solid #efefef', display: 'flex', gap: '10px' }}>
-            <input value={commentText} onChange={e => setCommentText(e.target.value)} onKeyDown={e => e.key === 'Enter' && addComment(post.id)} placeholder="Add a comment..." style={{ flex: 1, border: 'none', outline: 'none', fontSize: '14px', fontFamily: 'inherit' }} />
-            {commentText && <button onClick={() => addComment(post.id)} style={{ background: 'none', border: 'none', color: '#0095f6', fontWeight: '600', cursor: 'pointer' }}>Post</button>}
+
+          {/* Actions */}
+          <div style={{ borderTop: `1px solid ${C.border}`, padding: "8px 12px 0", flexShrink: 0 }}>
+            <div style={{ display: "flex", alignItems: "center", marginBottom: 6 }}>
+              <div style={{ display: "flex", gap: 12, flex: 1 }}>
+                <motion.button whileTap={{ scale: 1.4 }} onClick={() => onLike(post.id)} style={{ background: "none", border: "none", cursor: "pointer", padding: 4 }}><Icon.Heart f={liked} /></motion.button>
+                <button style={{ background: "none", border: "none", cursor: "pointer", padding: 4 }}><Icon.Comment /></button>
+                <button style={{ background: "none", border: "none", cursor: "pointer", padding: 4 }}><Icon.Share /></button>
+              </div>
+              <motion.button whileTap={{ scale: 1.3 }} onClick={() => onSave(post.id)} style={{ background: "none", border: "none", cursor: "pointer", padding: 4 }}><Icon.Bookmark f={saved} /></motion.button>
+            </div>
+            <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 8 }}>{(post.likes + (liked ? 1 : 0)).toLocaleString()} likes</div>
+          </div>
+
+          {/* Input */}
+          <div style={{ display: "flex", alignItems: "center", padding: "10px 12px", borderTop: `1px solid ${C.border}`, gap: 10, flexShrink: 0 }}>
+            <span style={{ fontSize: 22, cursor: "pointer" }}>😊</span>
+            <input value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => e.key === "Enter" && submit()}
+              placeholder="Add a comment…" style={{ flex: 1, border: "none", outline: "none", fontSize: 14, fontFamily: "inherit", background: "transparent" }} />
+            {input && <button onClick={submit} style={{ background: "none", border: "none", cursor: "pointer", color: C.blue, fontWeight: 600, fontSize: 14, padding: 0 }}>Post</button>}
           </div>
         </div>
       </motion.div>
     </motion.div>
   );
+}
 
-  // ── PROFILE PAGE ──
+/* ─── DOUBLE TAP IMAGE ───────────────────────────────────── */
+function DoubleTapImg({ post, liked, onLike, onOpenPost }) {
+  const [heart, setHeart] = useState(false);
+  const tapRef = useRef(0);
+
+  const handleClick = () => {
+    const now = Date.now();
+    if (now - tapRef.current < 300) {
+      if (!liked) onLike(post.id);
+      setHeart(true);
+      setTimeout(() => setHeart(false), 900);
+    }
+    tapRef.current = now;
+  };
+
+  return (
+    <div style={{ position: "relative", cursor: "pointer" }} onClick={handleClick}>
+      <img src={post.img} style={{ width: "100%", display: "block" }} alt="" />
+      <AnimatePresence>
+        {heart && (
+          <motion.div initial={{ opacity: 0, scale: 0.4 }} animate={{ opacity: 1, scale: 1.1 }} exit={{ opacity: 0, scale: 1.5 }} transition={{ duration: 0.6 }}
+            style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", pointerEvents: "none" }}>
+            <Icon.BigHeart />
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+/* ─── MAIN APP ───────────────────────────────────────────── */
+export default function InstagramClone({ onBack }) {
+  const [page, setPage] = useState("profile");
+  const [liked, setLiked] = useState([]);
+  const [saved, setSaved] = useState([]);
+  const [following, setFollowing] = useState(false);
+  const [tab, setTab] = useState("posts");
+  const [story, setStory] = useState(null);
+  const [modal, setModal] = useState(null);
+  const [seenHl, setSeenHl] = useState([]);
+
+  const toggleLike = id => setLiked(p => p.includes(id) ? p.filter(x => x !== id) : [...p, id]);
+  const toggleSave = id => setSaved(p => p.includes(id) ? p.filter(x => x !== id) : [...p, id]);
+  const openHl = h => { setStory(h); setSeenHl(s => [...new Set([...s, h.id])]); };
+
+  /* ── PROFILE ── */
   const ProfilePage = () => (
-    <div style={{ maxWidth: '935px', margin: '0 auto', padding: '30px 20px' }}>
-      {/* Profile Header */}
-      <div style={{ display: 'flex', gap: '60px', marginBottom: '40px', alignItems: 'flex-start' }}>
-        <div style={{ width: '150px', height: '150px', borderRadius: '50%', background: 'linear-gradient(45deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888)', padding: '3px', flexShrink: 0 }}>
-          <img src={PROFILE.avatar} alt="profile" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover', border: '3px solid #fff' }} />
+    <div style={{ maxWidth: 935, margin: "0 auto", paddingTop: 30 }}>
+      {/* Header */}
+      <header style={{ display: "flex", marginBottom: 44, padding: "0 20px", gap: 30 }}>
+        <div style={{ flexShrink: 0 }}>
+          <Ring size={150} pad={3} gap={3}>
+            <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 60, fontWeight: 700, color: "#4A3728" }}>P</div>
+          </Ring>
         </div>
-        <div style={{ flex: 1 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '20px', flexWrap: 'wrap' }}>
-            <span style={{ fontSize: '20px', fontWeight: '300' }}>{PROFILE.username}</span>
-            <motion.button whileTap={{ scale: 0.95 }} onClick={() => setFollowing(!following)} style={{ padding: '7px 24px', borderRadius: '8px', border: 'none', backgroundColor: following ? '#efefef' : '#0095f6', color: following ? '#262626' : '#fff', fontWeight: '600', cursor: 'pointer', fontSize: '14px' }}>
-              {following ? 'Following' : 'Follow'}
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 20, flexWrap: "wrap" }}>
+            <h2 style={{ fontSize: 20, fontWeight: 300, margin: 0, color: C.text }}>{PROFILE.username}</h2>
+            <motion.button whileTap={{ scale: 0.95 }} onClick={() => setFollowing(f => !f)}
+              style={{ background: following ? "transparent" : C.blue, border: following ? `1px solid ${C.border}` : "none", borderRadius: 8, color: following ? C.text : "white", cursor: "pointer", fontWeight: 600, padding: "7px 16px", fontSize: 14, fontFamily: "inherit" }}>
+              {following ? "Following" : "Follow"}
             </motion.button>
-            <button style={{ padding: '7px 24px', borderRadius: '8px', border: '1px solid #dbdbdb', backgroundColor: '#fff', fontWeight: '600', cursor: 'pointer', fontSize: '14px' }} onClick={() => setPage('dms')}>Message</button>
+            <button style={{ background: "transparent", border: `1px solid ${C.border}`, borderRadius: 8, color: C.text, cursor: "pointer", fontWeight: 600, padding: "7px 16px", fontSize: 14, fontFamily: "inherit" }}>Message</button>
           </div>
-          <div style={{ display: 'flex', gap: '40px', marginBottom: '20px' }}>
-            <span><strong>{PROFILE.posts}</strong> posts</span>
-            <span><strong>{PROFILE.followers}</strong> followers</span>
-            <span><strong>{PROFILE.following}</strong> following</span>
-          </div>
-          <div style={{ fontWeight: '600', marginBottom: '4px' }}>{PROFILE.name}</div>
-          <div style={{ fontSize: '14px', lineHeight: '1.6', whiteSpace: 'pre-line' }}>{PROFILE.bio}</div>
+          <ul style={{ display: "flex", listStyle: "none", padding: 0, margin: "0 0 16px", gap: 40 }}>
+            {[["6","posts"],["2.4K","followers"],["210","following"]].map(([v,l]) => (
+              <li key={l} style={{ fontSize: 16, color: C.text }}><span style={{ fontWeight: 600 }}>{v}</span> {l}</li>
+            ))}
+          </ul>
+          <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 2 }}>{PROFILE.name}</div>
+          <div style={{ fontSize: 14, lineHeight: "20px", whiteSpace: "pre-wrap", color: C.text }}>{PROFILE.bio}</div>
+          <a href="#" style={{ color: "#00376b", fontWeight: 600, fontSize: 14, textDecoration: "none" }}>{PROFILE.website}</a>
         </div>
-      </div>
+      </header>
 
       {/* Highlights */}
-      <div style={{ display: 'flex', gap: '24px', marginBottom: '32px', overflowX: 'auto', paddingBottom: '8px' }}>
+      <div style={{ display: "flex", gap: 20, padding: "0 20px 24px", overflowX: "auto" }}>
         {HIGHLIGHTS.map(h => (
-          <div key={h.id} onClick={() => setHighlightData({ slides: h.slides, name: h.name })} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', cursor: 'pointer', flexShrink: 0 }}>
-            <div style={{ width: '77px', height: '77px', borderRadius: '50%', border: '1px solid #dbdbdb', padding: '3px', backgroundColor: '#fafafa' }}>
-              <img src={h.cover} alt={h.name} style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
-            </div>
-            <span style={{ fontSize: '12px', textAlign: 'center', maxWidth: '77px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{h.name}</span>
-          </div>
+          <Ring key={h.id} size={66} pad={2} gap={2} label={h.name} seen={seenHl.includes(h.id)} onClick={() => openHl(h)}>
+            <img src={h.cover} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+          </Ring>
         ))}
       </div>
 
       {/* Tabs */}
-      <div style={{ display: 'flex', borderTop: '1px solid #dbdbdb' }}>
-        {[['posts','⊞'], ['reels','▷'], ['tagged','@']].map(([tab, icon]) => (
-          <button key={tab} onClick={() => setProfileTab(tab)} style={{ flex: 1, padding: '12px', background: 'none', border: 'none', borderTop: profileTab === tab ? '1px solid #262626' : '1px solid transparent', cursor: 'pointer', color: profileTab === tab ? '#262626' : '#8e8e8e', fontWeight: profileTab === tab ? '600' : '400', fontSize: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
-            {icon} {tab.toUpperCase()}
+      <div style={{ borderTop: `1px solid ${C.border}`, display: "flex" }}>
+        {[
+          { id: "posts", label: "POSTS", Icon: (a) => <Icon.GridTab a={a} /> },
+          { id: "reels", label: "REELS", Icon: (a) => <Icon.ReelsTab a={a} /> },
+          { id: "tagged", label: "TAGGED", Icon: (a) => <Icon.TagTab a={a} /> },
+        ].map(({ id, label, Icon: TabIcon }) => (
+          <button key={id} onClick={() => setTab(id)}
+            style={{ flex: 1, background: "none", border: "none", borderTop: tab === id ? `1px solid ${C.text}` : "none", marginTop: -1, cursor: "pointer", height: 52, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, fontSize: 12, fontWeight: 600, letterSpacing: 1, color: tab === id ? C.text : C.muted, fontFamily: "inherit" }}>
+            <TabIcon a={tab === id} />
+            {label}
           </button>
         ))}
       </div>
 
       {/* Grid */}
-      {profileTab === 'posts' && (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '3px', marginTop: '3px' }}>
-          {POSTS.map(post => (
-            <div key={post.id} onClick={() => setOpenPost(post)} style={{ aspectRatio: '1/1', cursor: 'pointer', overflow: 'hidden', position: 'relative' }}>
-              <img src={post.img} alt="post" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-              <div style={{ position: 'absolute', inset: 0, backgroundColor: 'rgba(0,0,0,0)', transition: 'background 0.2s', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '16px', color: '#fff', fontWeight: 'bold', fontSize: '14px' }} className="post-hover">
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-      {profileTab === 'reels' && (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '3px', marginTop: '3px' }}>
-          {POSTS.slice(0,3).map(post => (
-            <div key={post.id} onClick={() => setOpenPost(post)} style={{ aspectRatio: '9/16', cursor: 'pointer', overflow: 'hidden', position: 'relative', backgroundColor: '#000' }}>
-              <img src={post.img} alt="reel" style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.85 }} />
-              <div style={{ position: 'absolute', bottom: '8px', left: '8px', color: '#fff', fontSize: '12px' }}>▶ {(post.likes / 1000).toFixed(1)}K</div>
-            </div>
-          ))}
-        </div>
-      )}
-      {profileTab === 'tagged' && (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '3px', marginTop: '3px' }}>
-          {POSTS.slice(2).map(post => (
-            <div key={post.id} onClick={() => setOpenPost(post)} style={{ aspectRatio: '1/1', cursor: 'pointer', overflow: 'hidden' }}>
-              <img src={post.img} alt="tagged" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-            </div>
-          ))}
-        </div>
-      )}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 3, paddingBottom: 60 }}>
+        {POSTS.map(post => (
+          <motion.div key={post.id} whileHover={{ opacity: 0.85 }} onClick={() => setModal(post)}
+            style={{ aspectRatio: "1/1", overflow: "hidden", cursor: "pointer", position: "relative" }}>
+            <img src={post.img} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+            {/* Hover overlay with likes */}
+            <motion.div initial={{ opacity: 0 }} whileHover={{ opacity: 1 }}
+              style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.25)", display: "flex", alignItems: "center", justifyContent: "center", gap: 20 }}>
+              <span style={{ color: "white", fontWeight: 700, fontSize: 16, display: "flex", alignItems: "center", gap: 6 }}>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
+                {post.likes.toLocaleString()}
+              </span>
+              <span style={{ color: "white", fontWeight: 700, fontSize: 16, display: "flex", alignItems: "center", gap: 6 }}>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+                {post.comments.length}
+              </span>
+            </motion.div>
+          </motion.div>
+        ))}
+      </div>
     </div>
   );
 
-  // ── FEED PAGE ──
+  /* ── FEED ── */
   const FeedPage = () => (
-    <div style={{ maxWidth: '470px', margin: '0 auto' }}>
-      {/* Stories bar */}
-      <div style={{ backgroundColor: '#fff', borderBottom: '1px solid #dbdbdb', padding: '12px 0', display: 'flex', gap: '16px', overflowX: 'auto', paddingLeft: '16px', marginBottom: '0' }}>
-        {STORIES.map((s, i) => (
-          <div key={i} onClick={() => setStoryData({ slides: [s.img], name: s.name })} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', cursor: 'pointer', flexShrink: 0 }}>
-            <div style={{ width: '62px', height: '62px', borderRadius: '50%', padding: '2px', background: s.seen ? '#dbdbdb' : 'linear-gradient(45deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888)' }}>
-              <img src={s.img} alt={s.name} style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover', border: '2px solid #fff' }} />
-            </div>
-            <span style={{ fontSize: '11px', maxWidth: '64px', textAlign: 'center', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{s.name}</span>
-          </div>
-        ))}
-      </div>
-      {/* Posts */}
-      {POSTS.map(post => (
-        <div key={post.id} style={{ backgroundColor: '#fff', marginBottom: '1px', borderBottom: '1px solid #efefef' }}>
-          <div style={{ display: 'flex', alignItems: 'center', padding: '12px 16px', gap: '12px' }}>
-            <div onClick={() => setPage('profile')} style={{ cursor: 'pointer', width: '32px', height: '32px', borderRadius: '50%', background: 'linear-gradient(45deg,#f09433,#bc1888)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: '12px', fontWeight: 'bold' }}>P</div>
-            <div onClick={() => setPage('profile')} style={{ cursor: 'pointer', flex: 1 }}>
-              <div style={{ fontWeight: '600', fontSize: '14px' }}>pobapet_official</div>
-              <div style={{ fontSize: '12px', color: '#8e8e8e' }}>Mumbai, India</div>
-            </div>
-            <span style={{ fontSize: '20px', cursor: 'pointer' }}>···</span>
-          </div>
-          <img src={post.img} alt="post" onClick={() => setOpenPost(post)} style={{ width: '100%', aspectRatio: '1/1', objectFit: 'cover', cursor: 'pointer', display: 'block' }} />
-          <div style={{ padding: '8px 16px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-              <div style={{ display: 'flex', gap: '16px' }}>
-                <motion.button whileTap={{ scale: 1.3 }} onClick={() => toggleLike(post.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontSize: '24px' }}>{likedPosts.includes(post.id) ? '❤️' : '🤍'}</motion.button>
-                <button onClick={() => setOpenPost(post)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontSize: '22px' }}>💬</button>
+    <div style={{ maxWidth: 470, margin: "0 auto" }}>
+      {POSTS.map((post, i) => {
+        const isLiked = liked.includes(post.id);
+        const isSaved = saved.includes(post.id);
+        return (
+          <motion.article key={post.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04 }}
+            style={{ background: C.white, borderBottom: `1px solid ${C.border}` }}>
+            <div style={{ display: "flex", alignItems: "center", padding: "10px 12px", gap: 10 }}>
+              <Ring size={32} pad={1.5} gap={1.5} onClick={() => setPage("profile")}>
+                <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 700, color: "#4A3728" }}>P</div>
+              </Ring>
+              <div style={{ flex: 1, cursor: "pointer" }} onClick={() => setPage("profile")}>
+                <div style={{ fontWeight: 600, fontSize: 14 }}>{PROFILE.username}</div>
+                <div style={{ fontSize: 11, color: C.muted }}>Mumbai, India</div>
               </div>
-              <motion.button whileTap={{ scale: 1.3 }} onClick={() => toggleSave(post.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontSize: '22px' }}>{savedPosts.includes(post.id) ? '🔖' : '🏷️'}</motion.button>
+              <button style={{ background: "none", border: "none", cursor: "pointer" }}><Icon.More /></button>
             </div>
-            <div style={{ fontWeight: '600', fontSize: '14px', marginBottom: '4px' }}>{(post.likes + (likedPosts.includes(post.id) ? 1 : 0)).toLocaleString()} likes</div>
-            <div style={{ fontSize: '14px', marginBottom: '4px' }}><span style={{ fontWeight: '600' }}>pobapet_official</span> {post.caption}</div>
-            <div onClick={() => setOpenPost(post)} style={{ fontSize: '14px', color: '#8e8e8e', cursor: 'pointer', marginBottom: '4px' }}>View all {allComments(post).length} comments</div>
-            <div style={{ fontSize: '10px', color: '#8e8e8e', textTransform: 'uppercase' }}>{post.time}</div>
-          </div>
-        </div>
-      ))}
-    </div>
-  );
 
-  // ── EXPLORE PAGE ──
-  const ExplorePage = () => (
-    <div style={{ maxWidth: '935px', margin: '0 auto', padding: '8px' }}>
-      <div style={{ marginBottom: '16px' }}>
-        <div style={{ backgroundColor: '#efefef', borderRadius: '8px', padding: '8px 16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <span style={{ color: '#8e8e8e' }}>🔍</span>
-          <span style={{ color: '#8e8e8e', fontSize: '14px' }}>Search</span>
-        </div>
-      </div>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '3px' }}>
-        {EXPLORE_IMGS.map((img, i) => (
-          <div key={i} onClick={() => setOpenPost(POSTS[i % POSTS.length])} style={{ aspectRatio: i % 5 === 0 ? '1/2' : '1/1', cursor: 'pointer', overflow: 'hidden', gridRow: i % 5 === 0 ? 'span 2' : 'span 1' }}>
-            <img src={img} alt="explore" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-          </div>
-        ))}
-      </div>
-    </div>
-  );
+            <DoubleTapImg post={post} liked={isLiked} onLike={toggleLike} onOpenPost={() => setModal(post)} />
 
-  // ── NOTIFICATIONS ──
-  const NotificationsPage = () => (
-    <div style={{ maxWidth: '470px', margin: '0 auto', padding: '16px' }}>
-      <h2 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '20px' }}>Notifications</h2>
-      <p style={{ fontSize: '12px', color: '#8e8e8e', marginBottom: '12px', fontWeight: '600' }}>THIS WEEK</p>
-      {NOTIFS.map((n, i) => (
-        <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
-          <div style={{ width: '44px', height: '44px', borderRadius: '50%', background: 'linear-gradient(45deg,#f09433,#bc1888)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 'bold', flexShrink: 0 }}>{n.user[0].toUpperCase()}</div>
-          <div style={{ flex: 1, fontSize: '14px' }}>
-            <span style={{ fontWeight: '600' }}>{n.user}</span> {n.action} <span style={{ color: '#8e8e8e' }}>· {n.time}</span>
-          </div>
-          {n.img && <img src={n.img} alt="" style={{ width: '44px', height: '44px', objectFit: 'cover', flexShrink: 0 }} />}
-          {!n.img && <button style={{ padding: '6px 16px', borderRadius: '8px', border: '1px solid #dbdbdb', background: '#fff', fontWeight: '600', fontSize: '13px', cursor: 'pointer' }}>Follow back</button>}
-        </div>
-      ))}
-    </div>
-  );
-
-  // ── DMs ──
-  const DMPage = () => (
-    <div style={{ maxWidth: '935px', margin: '0 auto', display: 'flex', height: 'calc(100vh - 110px)' }}>
-      {/* DM List */}
-      <div style={{ width: '350px', borderRight: '1px solid #dbdbdb', flexShrink: 0 }}>
-        <div style={{ padding: '20px 16px', borderBottom: '1px solid #dbdbdb', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <span style={{ fontWeight: '600', fontSize: '16px' }}>pobapet_official</span>
-          <span style={{ fontSize: '22px', cursor: 'pointer' }}>✏️</span>
-        </div>
-        {DMS.map((dm, i) => (
-          <div key={i} onClick={() => setOpenDM(dm)} style={{ padding: '12px 16px', display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer', backgroundColor: openDM?.user === dm.user ? '#fafafa' : '#fff', borderBottom: '1px solid #fafafa' }}>
-            <div style={{ width: '56px', height: '56px', borderRadius: '50%', background: 'linear-gradient(45deg,#f09433,#bc1888)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 'bold', fontSize: '20px', flexShrink: 0 }}>{dm.user[0].toUpperCase()}</div>
-            <div style={{ flex: 1, overflow: 'hidden' }}>
-              <div style={{ fontWeight: dm.unread ? '600' : '400', fontSize: '14px' }}>{dm.user}</div>
-              <div style={{ fontSize: '13px', color: '#8e8e8e', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{dm.msg}</div>
+            <div style={{ padding: "4px 12px 10px" }}>
+              <div style={{ display: "flex", alignItems: "center", marginBottom: 6 }}>
+                <div style={{ display: "flex", gap: 14, flex: 1 }}>
+                  <motion.button whileTap={{ scale: 1.4 }} onClick={() => toggleLike(post.id)} style={{ background: "none", border: "none", cursor: "pointer", padding: 4 }}><Icon.Heart f={isLiked} /></motion.button>
+                  <button onClick={() => setModal(post)} style={{ background: "none", border: "none", cursor: "pointer", padding: 4 }}><Icon.Comment /></button>
+                  <button style={{ background: "none", border: "none", cursor: "pointer", padding: 4 }}><Icon.Share /></button>
+                </div>
+                <motion.button whileTap={{ scale: 1.3 }} onClick={() => toggleSave(post.id)} style={{ background: "none", border: "none", cursor: "pointer", padding: 4 }}><Icon.Bookmark f={isSaved} /></motion.button>
+              </div>
+              <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 4 }}>{(post.likes + (isLiked ? 1 : 0)).toLocaleString()} likes</div>
+              <div style={{ fontSize: 14, marginBottom: 4 }}><span style={{ fontWeight: 600 }}>{PROFILE.username} </span>{post.caption}</div>
+              {post.comments.length > 0 && <button onClick={() => setModal(post)} style={{ background: "none", border: "none", cursor: "pointer", padding: 0, color: C.muted, fontSize: 14 }}>View all {post.comments.length} comments</button>}
+              <div style={{ fontSize: 10, color: C.muted, textTransform: "uppercase", letterSpacing: 0.3, marginTop: 4 }}>{post.time}</div>
             </div>
-            <div style={{ fontSize: '12px', color: '#8e8e8e' }}>{dm.time}</div>
-          </div>
-        ))}
-      </div>
-      {/* Chat area */}
-      {openDM ? (
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-          <div style={{ padding: '16px', borderBottom: '1px solid #dbdbdb', display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'linear-gradient(45deg,#f09433,#bc1888)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 'bold' }}>{openDM.user[0].toUpperCase()}</div>
-            <span style={{ fontWeight: '600', fontSize: '16px' }}>{openDM.user}</span>
-          </div>
-          <div style={{ flex: 1, padding: '16px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            <div style={{ alignSelf: 'flex-start', backgroundColor: '#efefef', borderRadius: '18px', padding: '8px 14px', fontSize: '14px', maxWidth: '70%' }}>{openDM.msg}</div>
-            {(dmMessages[openDM.user] || []).map((m, i) => (
-              <div key={i} style={{ alignSelf: m.from === 'you' ? 'flex-end' : 'flex-start', backgroundColor: m.from === 'you' ? '#0095f6' : '#efefef', color: m.from === 'you' ? '#fff' : '#262626', borderRadius: '18px', padding: '8px 14px', fontSize: '14px', maxWidth: '70%' }}>{m.text}</div>
-            ))}
-          </div>
-          <div style={{ padding: '12px 16px', borderTop: '1px solid #dbdbdb', display: 'flex', gap: '12px', alignItems: 'center' }}>
-            <input value={dmText} onChange={e => setDmText(e.target.value)} onKeyDown={e => e.key === 'Enter' && sendDM()} placeholder="Message..." style={{ flex: 1, border: '1px solid #dbdbdb', borderRadius: '22px', padding: '10px 16px', outline: 'none', fontSize: '14px', fontFamily: 'inherit' }} />
-            {dmText && <button onClick={sendDM} style={{ background: 'none', border: 'none', color: '#0095f6', fontWeight: '600', cursor: 'pointer', fontSize: '14px' }}>Send</button>}
-          </div>
-        </div>
-      ) : (
-        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: '12px', color: '#8e8e8e' }}>
-          <div style={{ fontSize: '48px' }}>💬</div>
-          <span style={{ fontSize: '16px' }}>Select a message</span>
-        </div>
-      )}
+          </motion.article>
+        );
+      })}
     </div>
   );
 
   return (
-    <div style={{ backgroundColor: '#fafafa', minHeight: '100vh', fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif', color: '#262626' }}>
+    <div style={{ background: C.bg, minHeight: "100vh", fontFamily: '-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif' }}>
+      {/* Top Nav */}
+      <nav style={{ background: C.white, borderBottom: `1px solid ${C.border}`, position: "fixed", top: 0, width: "100%", zIndex: 200, height: 60, boxSizing: "border-box" }}>
+        <div style={{ maxWidth: 975, margin: "0 auto", padding: "0 16px", display: "flex", alignItems: "center", height: "100%", justifyContent: "space-between" }}>
+          <button onClick={onBack || (() => {})} style={{ background: "none", border: "none", cursor: "pointer", padding: 8 }}><Icon.Back /></button>
+          <div style={{ fontFamily: "'Billabong','Grand Hotel',cursive", fontSize: 28, color: C.text, userSelect: "none" }}>Instagram</div>
+          <button style={{ background: "none", border: "none", cursor: "pointer", padding: 8 }}><Icon.Plus /></button>
+        </div>
+      </nav>
 
-      {/* TOP NAV */}
-      <div style={{ position: 'sticky', top: 0, backgroundColor: '#fff', borderBottom: '1px solid #dbdbdb', zIndex: 100, height: '60px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 20px', boxSizing: 'border-box' }}>
-        <button onClick={onBack} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.4rem' }}>←</button>
-        <span style={{ fontFamily: 'Georgia, serif', fontSize: '1.6rem', fontStyle: 'italic', fontWeight: 'bold' }}>Instagram</span>
-        <button onClick={() => setPage('dms')} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.4rem' }}>💬</button>
-      </div>
-
-      {/* PAGE CONTENT */}
-      <div style={{ paddingBottom: '70px' }}>
+      {/* Content */}
+      <div style={{ paddingTop: 60, paddingBottom: 60 }}>
         <AnimatePresence mode="wait">
-          <motion.div key={page} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.15 }}>
-            {page === 'profile' && <ProfilePage />}
-            {page === 'feed' && <FeedPage />}
-            {page === 'explore' && <ExplorePage />}
-            {page === 'notifications' && <NotificationsPage />}
-            {page === 'dms' && <DMPage />}
+          <motion.div key={page} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.12 }}>
+            {page === "profile" ? <ProfilePage /> : <FeedPage />}
           </motion.div>
         </AnimatePresence>
       </div>
 
-      {/* BOTTOM NAV */}
-      <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, backgroundColor: '#fff', borderTop: '1px solid #dbdbdb', display: 'flex', justifyContent: 'space-around', padding: '10px 0', zIndex: 100 }}>
-        {[['feed','🏠'],['explore','🔍'],['reels','➕'],['notifications','❤️'],['profile','👤']].map(([p, icon]) => (
-          <button key={p} onClick={() => setPage(p)} style={{ background: 'none', border: 'none', fontSize: '22px', cursor: 'pointer', padding: '4px 12px', opacity: page === p ? 1 : 0.5 }}>{icon}</button>
+      {/* Bottom Nav */}
+      <nav style={{ background: C.white, borderTop: `1px solid ${C.border}`, position: "fixed", bottom: 0, width: "100%", height: 52, display: "flex", alignItems: "center", zIndex: 200 }}>
+        {[
+          { id: "feed",    el: () => <Icon.Home f={page==="feed"} /> },
+          { id: "search",  el: () => <Icon.Search /> },
+          { id: "new",     el: () => <Icon.Plus /> },
+          { id: "reels",   el: () => <Icon.Reels /> },
+          { id: "profile", el: () => <Icon.Profile f={page==="profile"} /> },
+        ].map(({ id, el }) => (
+          <button key={id} onClick={() => { if (id === "profile") setPage("profile"); else if (id === "feed") setPage("feed"); }}
+            style={{ flex: 1, background: "none", border: "none", cursor: "pointer", height: "100%", display: "flex", alignItems: "center", justifyContent: "center",
+              opacity: (id==="feed"&&page==="feed")||(id==="profile"&&page==="profile") ? 1 : 0.5, transition: "opacity 0.15s" }}>
+            {el()}
+          </button>
         ))}
-      </div>
+      </nav>
 
-      {/* OVERLAYS */}
+      {/* Overlays */}
       <AnimatePresence>
-        {openPost && <PostModal post={openPost} onClose={() => setOpenPost(null)} />}
-        {storyData && <StoryViewer data={storyData} onClose={() => setStoryData(null)} />}
-        {highlightData && <StoryViewer data={highlightData} onClose={() => setHighlightData(null)} />}
+        {story && <StoryViewer key="story" hl={story} onClose={() => setStory(null)} />}
+      </AnimatePresence>
+      <AnimatePresence>
+        {modal && <PostModal key={modal.id} post={modal} liked={liked.includes(modal.id)} saved={saved.includes(modal.id)} onLike={toggleLike} onSave={toggleSave} onClose={() => setModal(null)} />}
       </AnimatePresence>
     </div>
   );
-};
-
-export default InstagramPage;
+}
