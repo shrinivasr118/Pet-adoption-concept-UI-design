@@ -42,7 +42,7 @@ const BREEDS = {
   ]
 };
 
-const Home = ({ onAdoptClick, onTrash }) => {
+const Home = ({ onAdoptClick, onTrash, onSubmit }) => {
   const [isDonating, setIsDonating] = useState(false);
 
   return (
@@ -147,7 +147,8 @@ const Home = ({ onAdoptClick, onTrash }) => {
         {isDonating && (
           <DonationForm 
             onClose={() => setIsDonating(false)} 
-            onTrash={onTrash} 
+            onTrash={onTrash}
+            onSubmit={onSubmit}
           />
         )}
       </AnimatePresence>
@@ -157,7 +158,7 @@ const Home = ({ onAdoptClick, onTrash }) => {
 };
 
 // --- DONATION FORM COMPONENT ---
-const DonationForm = ({ onClose, onTrash }) => {
+const DonationForm = ({ onClose, onTrash, onSubmit }) => {
   const [status, setStatus] = useState('filling'); 
   
   // ADDED: isVaccinated and isNeutered state
@@ -187,10 +188,10 @@ const DonationForm = ({ onClose, onTrash }) => {
     e.preventDefault();
     setStatus('stamped');
 
-    // 1. CREATE THE DATA OBJECT FOR ADMIN
+    // 1. CREATE THE DATA OBJECT FOR ADMIN PANEL
     const applicationData = {
         id: 'DON-' + Math.floor(Math.random() * 10000),
-        type: 'donation', // <--- IMPORTANT: Triggers Blue File
+        type: 'donation',
         petName: formData.breed ? `Incoming ${formData.breed}` : "Unknown Pet",
         petBreed: formData.breed,
         petType: formData.petType,
@@ -199,13 +200,13 @@ const DonationForm = ({ onClose, onTrash }) => {
         healthStatus: {
            isVaccinated: formData.isVaccinated,
            isNeutered: formData.isNeutered,
-           isChecked: false // Donations always start as not checked
+           isChecked: false
         }
     };
 
-    // 2. SEND DATA AND CLOSE
+    // 2. SEND TO ADMIN PANEL (not trash!)
     setTimeout(() => {
-        if(onTrash) onTrash(applicationData); // Send to App.js -> AdminPanel
+        if(onSubmit) onSubmit(applicationData); // Goes to Admin Panel
         onClose();
     }, 1500);
   };
@@ -213,9 +214,27 @@ const DonationForm = ({ onClose, onTrash }) => {
   const handleTrash = (e) => {
     e.preventDefault();
     setStatus('crumpling');
+    
+    // CREATE TRASH-COMPATIBLE FORMAT
+    const trashItem = {
+      pet: {
+        name: formData.breed ? `${formData.breed}` : "Unknown Pet",
+        type: formData.petType,
+        breed: formData.breed
+      },
+      data: {
+        name: formData.name,
+        address: formData.address,
+        contact: formData.contact,
+        isVaccinated: formData.isVaccinated,
+        isNeutered: formData.isNeutered
+      }
+    };
+    
     setTimeout(() => {
        setStatus('tossing');
        setTimeout(() => {
+           if(onTrash) onTrash(trashItem); // Send to trash with correct format
            onClose();
        }, 800);
     }, 800);

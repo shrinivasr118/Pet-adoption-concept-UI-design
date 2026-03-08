@@ -33,18 +33,11 @@ function App() {
   // --- Applications Tracking ---
   const [applications, setApplications] = useState([]);
 
-  // ─── CRITICAL FIX HERE ───
+  // ─── ADD TO TRASH (Trash button clicked) ───
   const handleAddToTrash = (item) => {
     setIsReceivingTrash(true);
 
-    // LOGIC: If this "trash" item is actually a Donation Form (type: 'donation'), 
-    // we MUST also send it to the Admin Panel (applications state).
-    if (item && (item.type === 'donation' || (item.id && item.id.startsWith('DON-')))) {
-        console.log("Donation received via Trash:", item);
-        setApplications(prev => [...prev, item]);
-    }
-
-    // Continue with the visual animation
+    // ONLY add to trash, NOT to admin panel
     setTimeout(() => {
       setTrash(prev => [...prev, item]); 
       setIsReceivingTrash(false);
@@ -57,10 +50,32 @@ function App() {
   };
 
   const handleSubmitFromTrash = (itemToSubmit) => {
+    // When restored from trash, NOW send to admin panel
+    const adminFormat = {
+      id: 'DON-' + Math.floor(Math.random() * 10000),
+      type: 'donation',
+      petName: itemToSubmit.pet.name,
+      petBreed: itemToSubmit.pet.breed,
+      petType: itemToSubmit.pet.type,
+      donorName: itemToSubmit.data.name,
+      submittedAt: new Date().toLocaleString(),
+      healthStatus: {
+        isVaccinated: itemToSubmit.data.isVaccinated,
+        isNeutered: itemToSubmit.data.isNeutered,
+        isChecked: false
+      }
+    };
+    
+    setApplications(prev => [...prev, adminFormat]);
     alert(`Application for ${itemToSubmit.pet.name} restored and submitted!`);
-    handleRemoveFromTrash(itemToSubmit); 
-    // Optional: Add to applications if restored
-    // setApplications(prev => [...prev, itemToSubmit]); 
+    handleRemoveFromTrash(itemToSubmit);
+  };
+
+  // --- Handle Direct Submission (Submit button clicked) ---
+  const handleDirectSubmission = (application) => {
+    // Direct submission goes straight to admin panel
+    setApplications(prev => [...prev, application]);
+    console.log('Direct submission received:', application);
   };
 
   // --- Handle Standard Adoption Submission ---
@@ -115,7 +130,8 @@ function App() {
                 <Navbar /> 
                 <Home 
                     onAdoptClick={() => setView('categories')} 
-                    onTrash={handleAddToTrash} // Now handles Donations too!
+                    onTrash={handleAddToTrash}
+                    onSubmit={handleDirectSubmission}
                 />
                 <About />
                 <Work 
